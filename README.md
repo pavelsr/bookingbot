@@ -94,6 +94,16 @@ Result of getUpdates method:
 3) Удаляет прочитанные сообщения с сервера используя offset
 
 
+### Что делает Serikoff::Telegram::Screens ?
+
+Осуществляет навигацию по экранам, согласно json конфигу. Также хранит в памяти current_screen и previous_screen
+
+### Что делает Serikoff::Telegram::Sessions ?
+
+Хранит в памяти все сообщения между конкретными сообщениями.
+Если экран не был первым, то записывает также в ключ reply_to_screen предыдущий экран
+
+
 
 ### Goole API
 
