@@ -1,0 +1,31 @@
+{
+  "screens" : [
+    { "name": "item_select", "start_command": "/book", "keyboard":
+      [
+        { "key": "CTC 3D printer", "answ" : "Тысяча чертей, хороший выбор!" },
+        { "key": "Reprap 3D printer", "answ" : "Ох, лучше бы ты этого не делал..." },
+        { "key": "Lasersaur", "answ" : "И не забудь надеть очки!" },
+        { "key": "Shapeoko2", "answ" : "Сначала купи фрезу бл*ть" },
+        { "key": "Silhouette", "answ" : "За плёнкой в Зенон" }] 
+    }, 
+    { "name": "day_select", "parent": "item_select", "keyboard":
+      [
+        { "key": "today" }, 
+        { "key": "tomorrow" }
+      ]
+    },
+    { "name": "time_range_select", "parent": "day_select", "keyboard":
+      [
+        { "key": "morning", "answ" : "Кто рано встаёт, тому Бог даёт" },
+        { "key": "day", "answ" : "Хороший выбор" },
+        { "key": "evening", "answ" : "А вы, смотрю, ранняя пташка" }
+      ]
+    }
+  ],
+  "keyboard_key_at_screen": "keyboard",
+  "screen_starts_only_from_cmd": "true",
+  "session": {
+      "start": [ "/book" ],
+      "stop": [ "/confirm", "/ok" ]
+  }
+}
