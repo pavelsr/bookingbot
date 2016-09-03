@@ -12,6 +12,20 @@ use LWP::UserAgent;
 
 use Data::Dumper;
 
+sub get_calendarList {
+  my $access_token = shift;
+  my $url = 'https://www.googleapis.com/calendar/v3/users/me/calendarList';
+
+  my $ua = LWP::UserAgent->new;
+
+  my $req = HTTP::Request->new(GET => $url);
+
+  $req->header('Authorization' => 'Bearer ' . $access_token);
+
+  my $resp = $ua->request($req);
+  print $resp->as_string();
+}
+
 sub read_oauth2data {
   my $filename = 'oauth2data.json';
   my $json_text = do {
@@ -31,6 +45,7 @@ my $url = 'https://www.googleapis.com/oauth2/v4/token';
 my $now = time;
 my $payload = {
   'iss' => $oauth2data->{client_email},
+  'sub' => 'fablab61ru@gmail.com',
   'scope' => 'https://www.googleapis.com/auth/calendar',
   'aud' => $url,
   'iat' => $now,
@@ -49,5 +64,11 @@ $req->header('Content-Type' => 'application/x-www-form-urlencoded');
 $req->content($const_assertion . $assertion);
 
 my $resp = $ua->request($req);
-
 print $resp->as_string();
+
+if ($resp->is_success) {
+  my $json = JSON->new;
+  my $response = $json->decode($resp->decoded_content);
+  my $access_token = $response->{access_token};
+  get_calendarList($access_token)
+}
