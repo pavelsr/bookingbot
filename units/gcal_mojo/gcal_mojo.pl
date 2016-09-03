@@ -45,7 +45,7 @@ __DATA__
 
 @@ oauth.html.ep
 Click here to log in:
-<%= link_to "Connect!", $c->oauth2->auth_url("google", scope => "https://www.googleapis.com/auth/calendar", redirect_uri => "http://telebook.serikov.xyz/connect" ) %>
+<%= link_to "Connect!", $c->oauth2->auth_url("google", scope => "https://www.googleapis.com/auth/calendar", redirect_uri => "http://fablab61.ru:3008" ) %>
 
 
 @@ result.html.ep
