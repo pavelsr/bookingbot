@@ -1,5 +1,10 @@
 Telegram bot that helps FabLab to create a schedule
 
+GUI from web browser - http://booking.fablab61.ru/
+
+[Информация для разработчиков](https://bitbucket.org/serikov/fab_booking_bot/wiki/Developers%20Guide)
+
+
 ### Update object
 
 

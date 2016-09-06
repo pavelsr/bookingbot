@@ -6,12 +6,12 @@ use Data::Dumper;
 my $ua = Mojo::UserAgent->new;
 my $login = 'fablab61ru@gmail.com';
 
-my $res = $ua->post('https://api.timekit.io/v2/auth' => json => {
-	'email' => $login,
-	'password' => 'fab11boston'
-})->res->json;
+# my $res = $ua->post('https://api.timekit.io/v2/auth' => json => {
+# 	'email' => $login,
+# 	'password' => 'fab11boston'
+# })->res->json;
 
-warn Dumper $res;
+# warn Dumper $res;
 
 # $res->{data}{api_token}
 
@@ -65,13 +65,13 @@ warn Dumper $b64;
 
 #warn Dumper $ua->get('https://api.timekit.io/v2/calendars' => { 'Timekit-App' => 'docs', 'Authorization' => 'Basic '.$b64 })->res->body;
 
-$ua->on(start => sub {
-  my ($ua, $tx) = @_;
-  $tx->req->headers->header('Timekit-App' => 'docs');
-});
+# $ua->on(start => sub {
+#   my ($ua, $tx) = @_;
+#   $tx->req->headers->header('Timekit-App' => 'fablab61');
+# });
 
 
-warn Dumper $ua->get('https://api.timekit.io/v2/calendars' => { 'Authorization' => 'Basic '.$b64 })->res;
+warn Dumper $ua->get('https://api.timekit.io/v2/calendars' => { 'Timekit-App' => 'fablab61', 'Authorization' => 'Basic '.$b64 })->res->body;
 
 ##warn Dumper $ua->get('https://api.timekit.io/v2/calendars' => { 'Timekit-App' => 'docs', 'Authorization' => 'Basic '.$b64 })->res;
 
