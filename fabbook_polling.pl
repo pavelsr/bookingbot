@@ -13,6 +13,7 @@ use Serikoff::Telegram::Polling qw(get_last_messages);
 use Serikoff::Telegram::Sessions;
 use Serikoff::Telegram::Screens;
 use Serikoff::Telegram::Keyboards qw(create_one_time_keyboard);
+use Serikoff::Telegram::Restgram;
 
 my $jsonconfig = plugin 'JSONConfig';
 
@@ -32,6 +33,9 @@ my $screens = Serikoff::Telegram::Screens->new(
 	$jsonconfig->{screens}
 );
 
+my $restgram = Serikoff::Telegram::Restgram->new();
+use JSON qw(encode_json);
+
 my $polling_interval = 1;
 
 
@@ -47,9 +51,7 @@ sub extract_keys {
 	return \@keys;
 }
 
-
 Mojo::IOLoop->recurring($polling_interval => sub {
-	
 	my $hash = get_last_messages($api); # last message for polling period for each chat_id. keys = chat_id
 
 
@@ -76,7 +78,12 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 				#	warn "Find screen:".Dumper $screens->current->{name};
 				# or use $screens->current;
 
-			if (defined $screens->current) {
+			if (substr($update->{message}{text}, 0, 1) eq '%') {
+				# temporary mode for restgram testing
+
+				my $phone = substr($update->{message}{text}, 1);
+				$api->sendMessage({chat_id => $chat_id, text => encode_json($restgram->get_full_user_by_phone($phone))});
+			} elsif (defined $screens->current) {
 
 						if ($screens->is_first_screen) {
 							$sessions->update_sessions($chat_id, $update); 
