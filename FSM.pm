@@ -12,7 +12,10 @@ sub new {
 		fsa => FSA::Rules->new(
 			START => {
 				# init machine here
-				do => sub { shift->message('transition'); },
+				do => sub {
+					shift->message('transition');
+					$callbacks{send_start_message}();
+				},
 				rules => [BEGIN => 1],
 			},
 
@@ -23,53 +26,80 @@ sub new {
 
 			RESOURCE => {
 				do => sub {
-					$callbacks{on_resources_list}();
+					$callbacks{send_resources_list}();
 				},
 				rules => [
 					CANCEL => sub {
 						my ($state, %message) = @_;
 						return $message{text} eq "/cancel";
 					},
-					RESOURCE_INVALID => sub {
-						my ($state, %message) = @_;
-						return not $callbacks{is_resource_valid}($message{text});
-					},
 					DATETIME => sub {
 						my ($state, %message) = @_;
-						$state->result($message{text});
-						return 1;
+						my $resource = $message{text};
+						my $is_valid = $callbacks{parse_resource}($resource);
+						if ($is_valid) {
+							$state->result($resource);
+						}
+						return $is_valid;
 					},
+					RESOURCE_INVALID => 1
 				],
 			},
 
 			RESOURCE_INVALID => {
 				do => sub {
 					shift->message('transition');
-					$callbacks{on_resource_invalid}();
+					$callbacks{send_resource_invalid}();
 				},
 				rules => [RESOURCE => 1],
 			},
 
 			DATETIME => {
 				do => sub {
-					$callbacks{on_datetime_picker}();
+					$callbacks{send_datetime_picker}();
 				},
 				rules => [
 					CANCEL => sub {
 						my ($state, %message) = @_;
 						return $message{text} eq "/cancel";
 					},
+					BOOK => sub {
+						my ($state, %message) = @_;
+						my $result = $callbacks{parse_datetime}($message{text});
+						if (defined $result) {
+							$state->result($result);
+						}
+						return defined $result;
+					},
+					DATETIME_INVALID => 1
 				],
 			},
 
-			SCHEDULE => {
-				do => sub { shift->message('transition'); },
-				rules => [ BEGIN => 1],
+			DATETIME_INVALID => {
+				do => sub {
+					shift->message('transition');
+					$callbacks{send_datetime_invalid}();
+				},
+				rules => [DATETIME => 1],
+			},
+
+			BOOK => {
+				do => sub {
+					my $state = shift;
+					$state->message('transition');
+
+					my $machine = $state->machine;
+					my $resource = $machine->last_result('RESOURCE');
+					my $datetime = $machine->last_result('DATETIME');
+
+					$callbacks{book}($resource, $datetime);
+				},
+				rules => [BEGIN => 1],
 			},
 
 			CANCEL => {
 				do => sub { shift->message('transition'); },
-				rules => [ BEGIN => 1],
+				rules => [BEGIN => 1],
 			}
 		)
 	};

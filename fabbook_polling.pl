@@ -6,6 +6,7 @@ use Mojolicious::Lite;
 use Data::Dumper;
 use WWW::Telegram::BotAPI;
 use common::sense;
+use Date::Parse;
 
 #use lib $ENV {SLIBLOCATION} || "$FindBin::Bin/serikoff.lib" || '/home/pavel/projects/serikoff.lib';
 use lib '/home/pavel/projects/serikoff.lib';
@@ -23,7 +24,7 @@ my $jsonconfig = plugin 'JSONConfig';
 BEGIN { $ENV{TELEGRAM_BOTAPI_DEBUG} = 1 };
 
 my $api = WWW::Telegram::BotAPI->new(
-    token => '280790722:AAHwv_-7KiBrTIlgwPJqSyV2rXd_ISIFkO0'
+	token => '222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po'
 );
 
 # Create a new session with defined start and stop commands
@@ -59,6 +60,7 @@ sub _log_info {
 
 # sid - session id, used in logs to distinguish one session from another
 my $sid = 0;
+_log_info($sid, "ready to process incoming messages");
 
 # chat to state machine hash
 my %machines = ();
@@ -82,19 +84,43 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 		} else {
 			if (not exists $machines{$chat_id}) {
 				$machines{$chat_id} = FSM->new(
-					on_resources_list => sub {
-						$api->sendMessage({chat_id => $chat_id, text => "Select Resource", reply_markup => create_one_time_keyboard(['Machine 1', 'Machine 2'])});
+					send_start_message => sub {
+						$api->sendMessage({chat_id => $chat_id, text => "Welcome to FabLab booking bot."});
 					},
 
-					is_resource_valid => sub { shift eq 'Machine 1'; },
-
-					on_resource_invalid => sub {
-						$api->sendMessage({chat_id => $chat_id, text => "Selected resource is invalid"});
+					send_resources_list => sub {
+						$api->sendMessage({
+							chat_id => $chat_id,
+							text => "Select resource.",
+							reply_markup => create_one_time_keyboard(['Machine 1', 'Machine 2', 'Invalid Machine'])
+						});
 					},
 
-					on_datetime_picker => sub {
-						$api->sendMessage({chat_id => $chat_id, text => "Select Date"});
-					}
+					parse_resource => sub {
+						my $resource = shift;
+						return $resource eq 'Machine 1' || $resource eq 'Machine 2' ? $resource : undef;
+					},
+
+					send_resource_invalid => sub {
+						$api->sendMessage({chat_id => $chat_id, text => "Invalid resource."});
+					},
+
+					send_datetime_picker => sub {
+						$api->sendMessage({chat_id => $chat_id, text => "Enter date."});
+					},
+
+					parse_datetime => sub {
+						return str2time(shift);
+					},
+
+					send_datetime_invalid => sub {
+						$api->sendMessage({chat_id => $chat_id, text => "Invalid date."});
+					},
+
+					book => sub {
+						my ($resource, $datetime) = @_;
+						$api->sendMessage({chat_id => $chat_id, text => "You have booked $resource at " . scalar localtime $datetime . ". Thanks."});
+					},
 				);
 				_log_info($sid, "finite state machine created");
 			}
