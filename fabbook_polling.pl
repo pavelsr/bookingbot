@@ -27,16 +27,6 @@ my $api = WWW::Telegram::BotAPI->new(
 	token => '222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po'
 );
 
-# Create a new session with defined start and stop commands
-my $sessions = Serikoff::Telegram::Sessions->new(
-	$jsonconfig->{session}{start}, 
-	$jsonconfig->{session}{stop}
-);
-
-my $screens = Serikoff::Telegram::Screens->new(
-	$jsonconfig->{screens}
-);
-
 my $restgram = Serikoff::Telegram::Restgram->new();
 
 my $polling_interval = 1;
@@ -92,13 +82,16 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 						$api->sendMessage({
 							chat_id => $chat_id,
 							text => "Select resource.",
-							reply_markup => create_one_time_keyboard(['Machine 1', 'Machine 2', 'Invalid Machine'])
+							reply_markup => create_one_time_keyboard($jsonconfig->{resources}, 1)
 						});
 					},
 
 					parse_resource => sub {
 						my $resource = shift;
-						return $resource eq 'Machine 1' || $resource eq 'Machine 2' ? $resource : undef;
+						my $resources = $jsonconfig->{resources};
+						my $res = grep { $_ eq $resource } @$resources;
+						_log_info($sid, "result <<$res>>");
+						return $res;
 					},
 
 					send_resource_invalid => sub {
@@ -106,7 +99,7 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 					},
 
 					send_datetime_picker => sub {
-						$api->sendMessage({chat_id => $chat_id, text => "Enter date."});
+						$api->sendMessage({chat_id => $chat_id, text => "Enter date (example: 1 Jan 2017 12:00)."});
 					},
 
 					parse_datetime => sub {
