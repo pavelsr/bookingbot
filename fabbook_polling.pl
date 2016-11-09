@@ -9,7 +9,7 @@ use common::sense;
 use Date::Parse;
 
 #use lib $ENV {SLIBLOCATION} || "$FindBin::Bin/serikoff.lib" || '/home/pavel/projects/serikoff.lib';
-use lib '/home/pavel/projects/serikoff.lib';
+use lib 'serikoff.lib';
 use Serikoff::Telegram::Polling qw(get_last_messages);
 use Serikoff::Telegram::Sessions;
 use Serikoff::Telegram::Screens;
@@ -89,9 +89,7 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 					parse_resource => sub {
 						my $resource = shift;
 						my $resources = $jsonconfig->{resources};
-						my $res = grep { $_ eq $resource } @$resources;
-						_log_info($sid, "result <<$res>>");
-						return $res;
+						return grep { $_ eq $resource } @$resources;
 					},
 
 					send_resource_invalid => sub {

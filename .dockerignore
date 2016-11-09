@@ -1,0 +1,12 @@
+.dockerignore
+Dockerfile
+
+.git
+.gitignore
+.local
+
+units
+
+*.sh
+*.md
+*.swp
