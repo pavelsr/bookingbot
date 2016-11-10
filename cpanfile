@@ -1,6 +1,7 @@
 requires 'API::Google';
 requires 'common::sense';
 requires 'Data::Dumper';
+requires 'Date::Parse';
 requires 'DateTime';
 requires 'DateTime::Duration';
 requires 'DateTime::Format::RFC3339';

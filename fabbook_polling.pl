@@ -2,10 +2,8 @@
 
 package BookingBot;
 
-
 use common::sense;
 use Date::Parse;
-use DateTime;
 use JSON qw(encode_json);
 use Mojolicious::Lite;
 use WWW::Telegram::BotAPI;
@@ -114,8 +112,8 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 
 					book => sub {
 						my ($resource, $datetime) = @_;
-						Google::CalendarAPI::Events::insert($resource, DateTime->from_epoch(epoch => $datetime));
-						$api->sendMessage({chat_id => $chat_id, text => "You have booked $resource at " . (scalar localtime $datetime) . ". Thanks."});
+						Google::CalendarAPI::Events::insert($resource, $datetime);
+						$api->sendMessage({chat_id => $chat_id, text => "You have booked $resource at " . (scalar localtime $datetime) . "."});
 					},
 				);
 				_log_info($sid, "finite state machine created");
