@@ -1,8 +1,11 @@
-requires 'Mojolicious::Lite';
-requires 'Data::Dumper';
-requires 'WWW::Telegram::BotAPI';
+requires 'API::Google';
 requires 'common::sense';
-requires 'Date::Parse';
-requires 'List::MoreUtils';
-requires 'JSON';
+requires 'Data::Dumper';
+requires 'DateTime';
+requires 'DateTime::Duration';
+requires 'DateTime::Format::RFC3339';
 requires 'FSA::Rules';
+requires 'JSON';
+requires 'List::MoreUtils';
+requires 'Mojolicious::Lite';
+requires 'WWW::Telegram::BotAPI';

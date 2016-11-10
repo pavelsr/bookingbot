@@ -1,40 +1,46 @@
 #!/usr/bin/env perl
-# Demonstte getUpdates + offset usage
 
-package BroneBot;
-use Mojolicious::Lite;
-use Data::Dumper;
-use WWW::Telegram::BotAPI;
+package BookingBot;
+
+
 use common::sense;
 use Date::Parse;
-
-#use lib $ENV {SLIBLOCATION} || "$FindBin::Bin/serikoff.lib" || '/home/pavel/projects/serikoff.lib';
-use lib 'serikoff.lib';
-use Serikoff::Telegram::Polling qw(get_last_messages);
-use Serikoff::Telegram::Sessions;
-use Serikoff::Telegram::Screens;
-use Serikoff::Telegram::Keyboards qw(create_one_time_keyboard);
-use Serikoff::Telegram::Restgram;
+use DateTime;
 use JSON qw(encode_json);
+use Mojolicious::Lite;
+use WWW::Telegram::BotAPI;
+
+use lib 'serikoff.lib';
+use Serikoff::Telegram::Keyboards qw(create_one_time_keyboard);
+use Serikoff::Telegram::Polling qw(get_last_messages);
+use Serikoff::Telegram::Restgram;
 
 use FSM;
-
-my $jsonconfig = plugin 'JSONConfig';
+use Google;
 
 BEGIN { $ENV{TELEGRAM_BOTAPI_DEBUG} = 1 };
 
 my $api = WWW::Telegram::BotAPI->new(
-	token => '222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po'
+	#token => '222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po'
+	token => '280790722:AAHy3C7rd5O9vCdzGBuyGXdOMNyhLymkhKk'
 );
+
+my $jsonconfig = plugin 'JSONConfig';
 
 my $restgram = Serikoff::Telegram::Restgram->new();
 
 my $polling_interval = 1;
 
-# Extract keys by screen hash
+# sid - session id, used in logs to distinguish one session from another
+my $sid = 0;
+
+# chat to state machine hash
+my %machines = ();
+
+
+# extract keys by screen hash
 sub extract_keys {
 	my $screen_hash = shift;
-	#warn "extract_keys() : ".Dumper $screen_hash;
 	my @keys;
 	my @keyboard = @{$screen_hash->{$jsonconfig->{keyboard_key_at_screen}}};
 	for (@keyboard) {
@@ -48,12 +54,10 @@ sub _log_info {
 	app->log->info("[$session_id] " . $message);
 }
 
-# sid - session id, used in logs to distinguish one session from another
-my $sid = 0;
-_log_info($sid, "ready to process incoming messages");
 
-# chat to state machine hash
-my %machines = ();
+Google::CalendarAPI::auth('gapi.conf');
+
+_log_info($sid, "ready to process incoming messages");
 
 Mojo::IOLoop->recurring($polling_interval => sub {
 	my $hash = get_last_messages($api);
@@ -110,7 +114,8 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 
 					book => sub {
 						my ($resource, $datetime) = @_;
-						$api->sendMessage({chat_id => $chat_id, text => "You have booked $resource at " . scalar localtime $datetime . ". Thanks."});
+						Google::CalendarAPI::Events::insert($resource, DateTime->from_epoch(epoch => $datetime));
+						$api->sendMessage({chat_id => $chat_id, text => "You have booked $resource at " . (scalar localtime $datetime) . ". Thanks."});
 					},
 				);
 				_log_info($sid, "finite state machine created");
@@ -124,5 +129,3 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 });
 
 app->start;
-
-#$api->sendMessage({ chat_id => $chat_id, text => "Next screen...", reply_markup => create_one_time_keyboard($btns) });
