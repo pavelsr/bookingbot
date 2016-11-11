@@ -15,12 +15,12 @@ use Serikoff::Telegram::Restgram;
 
 use FSM;
 use Google;
+use Localization qw(lz);
 
 BEGIN { $ENV{TELEGRAM_BOTAPI_DEBUG} = 1 };
 
 my $api = WWW::Telegram::BotAPI->new(
-	#token => '222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po'
-	token => '280790722:AAHy3C7rd5O9vCdzGBuyGXdOMNyhLymkhKk'
+	token => '222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po'
 );
 
 my $jsonconfig = plugin 'JSONConfig';
@@ -77,13 +77,13 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 			if (not exists $machines{$chat_id}) {
 				$machines{$chat_id} = FSM->new(
 					send_start_message => sub {
-						$api->sendMessage({chat_id => $chat_id, text => "Welcome to FabLab booking bot."});
+						$api->sendMessage({chat_id => $chat_id, text => lz('welcome')});
 					},
 
 					send_resources_list => sub {
 						$api->sendMessage({
 							chat_id => $chat_id,
-							text => "Select resource.",
+							text => lz('select_resource'),
 							reply_markup => create_one_time_keyboard($jsonconfig->{resources}, 1)
 						});
 					},
@@ -95,11 +95,12 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 					},
 
 					send_resource_invalid => sub {
-						$api->sendMessage({chat_id => $chat_id, text => "Invalid resource."});
+						$api->sendMessage({chat_id => $chat_id, text => lz('invalid_resource')});
 					},
 
 					send_datetime_picker => sub {
-						$api->sendMessage({chat_id => $chat_id, text => "Enter date (example: 1 Jan 2017 12:00)."});
+						my $resource = shift;
+						$api->sendMessage({chat_id => $chat_id, text => lz('enter_date')});
 					},
 
 					parse_datetime => sub {
@@ -107,13 +108,13 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 					},
 
 					send_datetime_invalid => sub {
-						$api->sendMessage({chat_id => $chat_id, text => "Invalid date."});
+						$api->sendMessage({chat_id => $chat_id, text => lz('invalid_date_format')});
 					},
 
 					book => sub {
 						my ($resource, $datetime) = @_;
 						Google::CalendarAPI::Events::insert($resource, $datetime);
-						$api->sendMessage({chat_id => $chat_id, text => "You have booked $resource at " . (scalar localtime $datetime) . "."});
+						$api->sendMessage({chat_id => $chat_id, text => lz('booked', $resource, scalar localtime $datetime)});
 					},
 				);
 				_log_info($sid, "finite state machine created");
