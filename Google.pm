@@ -25,17 +25,11 @@ package Google::CalendarAPI::Events;
 use strict;
 use warnings;
 
-use DateTime;
 use DateTime::Format::RFC3339;
 
+
 sub insert {
-	my ($calendar, $summary, $starttime, $endtime) = @_;
-
-	my $start = DateTime->from_epoch(epoch => $starttime, time_zone => "floating");
-	my $end = DateTime->from_epoch(epoch => $endtime, time_zone => "floating");
-
-	$start->set_time_zone($timezone);
-	$end->set_time_zone($timezone);
+	my ($calendar, $summary, $start, $end) = @_;
 
 	my $event = {};
 	$event->{summary} = $summary;

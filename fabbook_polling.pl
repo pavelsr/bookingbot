@@ -4,6 +4,8 @@ package BookingBot;
 
 use common::sense;
 use Date::Parse qw(str2time);
+use DateTime;
+use DateTime::Duration;
 use JSON qw(encode_json);
 use Mojolicious::Lite;
 use WWW::Telegram::BotAPI;
@@ -95,10 +97,10 @@ sub new_fsm {
 		},
 
 		parse_duration => sub {
-			my ($input) = @_;
+			my ($arg) = @_;
 			my $durations = $jsonconfig->{durations};
-			my @result = grep { lz($_) eq $input } keys %$durations;
-			$durations->{$result[0]};
+			my @result = grep { lz($_) eq $arg } keys %$durations;
+			DateTime::Duration->new(minutes => $durations->{$result[0]});
 		},
 
 		send_duration_invalid => sub {
@@ -108,17 +110,16 @@ sub new_fsm {
 		send_datetime_picker => sub {
 			my $resource = shift;
 			$api->sendMessage({chat_id => $chat_id, text => lz("enter_date")});
-
-			#$api->sendMessage({
-			#chat_id => $chat_id,
-			#text => "Select day.",
-			#reply_markup => create_one_time_keyboard(
-			#map { $_->strftime("%a, %d %b %Y") } Resources::available_dates($resource), 1)
-			#});
 		},
 
 		parse_datetime => sub {
-			str2time(shift);
+			my $arg = (@_);
+			my $unixtime = str2time($arg);
+			if (defined $unixtime) {
+				my $result = DateTime->from_epoch(epoch => $unixtime, time_zone => "floating");
+				$result->set_time_zone($jsonconfig->{timezone});
+				$result;
+			}
 		},
 
 		send_datetime_invalid => sub {
@@ -128,7 +129,7 @@ sub new_fsm {
 		book => sub {
 			my ($name, $datetime, $duration) = @_;
 			$resources->book($user_id, $name, $datetime, $duration);
-			$api->sendMessage({chat_id => $chat_id, text => lz("booked", $name, scalar localtime $datetime)});
+			$api->sendMessage({chat_id => $chat_id, text => lz("booked", $name, $datetime->strftime("%a %b %d %T %Y"))});
 		},
 	);
 }
