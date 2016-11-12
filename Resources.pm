@@ -3,8 +3,6 @@ package Resources;
 use strict;
 use warnings;
 
-use DateTime;
-
 use Resource;
 
 sub new {

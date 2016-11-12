@@ -10,10 +10,13 @@ use API::Google::GCal;
 
 my $api;
 my $user;
+my $timezone;
+
 sub auth {
-	my ($tokensfile, $user_) = @_;
+	my ($tokensfile, $user_, $timezone_) = @_;
 	$api = API::Google::GCal->new({tokensfile => $tokensfile});
 	$user = $user_;
+	$timezone = $timezone_;
 }
 
 
@@ -31,9 +34,8 @@ sub insert {
 	my $start = DateTime->from_epoch(epoch => $starttime, time_zone => "floating");
 	my $end = DateTime->from_epoch(epoch => $endtime, time_zone => "floating");
 
-	my $time_zone = "Europe/Moscow";
-	$start->set_time_zone($time_zone);
-	$end->set_time_zone($time_zone);
+	$start->set_time_zone($timezone);
+	$end->set_time_zone($timezone);
 
 	my $event = {};
 	$event->{summary} = $summary;

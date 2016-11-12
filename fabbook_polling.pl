@@ -3,7 +3,7 @@
 package BookingBot;
 
 use common::sense;
-use Date::Parse;
+use Date::Parse qw(str2time);
 use JSON qw(encode_json);
 use Mojolicious::Lite;
 use WWW::Telegram::BotAPI;

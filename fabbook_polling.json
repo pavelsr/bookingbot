@@ -1,4 +1,6 @@
 {
+	"timezone": "Europe/Moscow",
+
 	"resources": [{
 		"name": "CTC 3D printer",
 		"calendar": "primary"
