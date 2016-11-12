@@ -16,6 +16,7 @@ use Serikoff::Telegram::Restgram;
 use FSM;
 use Google;
 use Localization qw(lz);
+use Resources;
 
 BEGIN { $ENV{TELEGRAM_BOTAPI_DEBUG} = 1 };
 
@@ -26,6 +27,7 @@ my $api = WWW::Telegram::BotAPI->new(
 my $jsonconfig = plugin "JSONConfig";
 
 my $restgram = Serikoff::Telegram::Restgram->new();
+my $resources = Resources->new($jsonconfig->{resources});
 
 my $polling_interval = 1;
 
@@ -53,7 +55,7 @@ sub extract_keys {
 }
 
 sub new_fsm {
-	my ($chat_id) = @_;
+	my ($user_id, $chat_id) = @_;
 
 	FSM->new(
 		send_start_message => sub {
@@ -64,18 +66,13 @@ sub new_fsm {
 			$api->sendMessage({
 				chat_id => $chat_id,
 				text => lz("select_resource"),
-				reply_markup => create_one_time_keyboard($jsonconfig->{resources}, 1)
+				reply_markup => create_one_time_keyboard($resources->names, 1)
 			});
 		},
 
 		parse_resource => sub {
-			my ($input) = @_;
-			my $resources = $jsonconfig->{resources};
-			if (grep { $_ eq $input } @$resources) {
-				$input;
-			} else {
-				undef;
-			}
+			my ($name) = @_;
+			$resources->exists($name) ? $name : undef;
 		},
 
 		send_resource_invalid => sub {
@@ -129,15 +126,15 @@ sub new_fsm {
 		},
 
 		book => sub {
-			my ($resource, $datetime) = @_;
-			Google::CalendarAPI::Events::insert($resource, $datetime);
-			$api->sendMessage({chat_id => $chat_id, text => lz("booked", $resource, scalar localtime $datetime)});
+			my ($name, $datetime) = @_;
+			$resources->book($user_id, $name, $datetime);
+			$api->sendMessage({chat_id => $chat_id, text => lz("booked", $name, scalar localtime $datetime)});
 		},
 	);
 }
 
 
-Google::CalendarAPI::auth("gapi.conf");
+Google::CalendarAPI::auth("gapi.conf", "fablab61ru\@gmail.com");
 
 _log_info($sid, "ready to process incoming messages");
 
@@ -159,7 +156,7 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 			$api->sendMessage({chat_id => $chat_id, text => $answer});
 		} else {
 			if (not exists $machines{$chat_id}) {
-				$machines{$chat_id} = new_fsm($chat_id);
+				$machines{$chat_id} = new_fsm($update->{message}->{from}->{id}, $chat_id);
 				_log_info($sid, "finite state machine created");
 			}
 			$machines{$chat_id}->next($update->{message});

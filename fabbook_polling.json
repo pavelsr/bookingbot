@@ -1,11 +1,21 @@
 {
-	"resources": [
-		"CTC 3D printer",
-		"Reprap 3D printer",
-		"Lasersaur",
-		"Shapeoko2",
-		"Silhouette"
-	],
+	"resources": [{
+		"name": "CTC 3D printer",
+		"calendar": "primary"
+	}, {
+		"name": "Reprap 3D printer",
+		"calendar": "primary"
+	}, {
+		"name": "Lasersaur",
+		"calendar": "b7qv527m99oqlq3md28cof16jc@group.calendar.google.com"
+	}, {
+		"name": "Shapeoko",
+		"calendar": "201re7djrdeeato14m23e600mo@group.calendar.google.com"
+	}, {
+		"name": "Silhouette",
+		"calendar": "primary"
+	}],
+
 	"durations": {
 		"30_min": 30,
 		"1_hour": 60,
