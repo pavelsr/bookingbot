@@ -126,8 +126,8 @@ sub new_fsm {
 		},
 
 		book => sub {
-			my ($name, $datetime) = @_;
-			$resources->book($user_id, $name, $datetime);
+			my ($name, $datetime, $duration) = @_;
+			$resources->book($user_id, $name, $datetime, $duration);
 			$api->sendMessage({chat_id => $chat_id, text => lz("booked", $name, scalar localtime $datetime)});
 		},
 	);

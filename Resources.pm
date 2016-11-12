@@ -3,6 +3,8 @@ package Resources;
 use strict;
 use warnings;
 
+use DateTime;
+
 use Resource;
 
 sub new {
@@ -37,7 +39,11 @@ sub schedule {
 }
 
 sub book {
-	my ($self, $user_id, $name, $start, $end) = @_;
+	my ($self, $user_id, $name, $datetime, $duration) = @_;
+
+	my $start = $datetime;
+	my $end = $datetime + $duration * 60;
+
 	$self->{resources}->{$name}->book($user_id, $start, $end);
 }
 

@@ -23,14 +23,13 @@ use strict;
 use warnings;
 
 use DateTime;
-use DateTime::Duration;
 use DateTime::Format::RFC3339;
 
 sub insert {
-	my ($calendar, $summary, $datetime) = @_;
+	my ($calendar, $summary, $starttime, $endtime) = @_;
 
-	my $start = DateTime->from_epoch(epoch => $datetime, time_zone => "floating");
-	my $end = $start->clone->add_duration(DateTime::Duration->new(hours => 1));
+	my $start = DateTime->from_epoch(epoch => $starttime, time_zone => "floating");
+	my $end = DateTime->from_epoch(epoch => $endtime, time_zone => "floating");
 
 	my $time_zone = "Europe/Moscow";
 	$start->set_time_zone($time_zone);

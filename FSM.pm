@@ -98,8 +98,9 @@ sub new {
 					my $machine = $state->machine;
 					my $resource = $machine->last_result("RESOURCE");
 					my $datetime = $machine->last_result("DATETIME");
+					my $duration = $machine->last_result("DURATION");
 
-					$callbacks{book}($resource, $datetime);
+					$callbacks{book}($resource, $datetime, $duration);
 				},
 				rules => [BEGIN => 1],
 			},
