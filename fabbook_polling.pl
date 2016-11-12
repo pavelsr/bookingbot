@@ -100,7 +100,9 @@ sub new_fsm {
 			my ($arg) = @_;
 			my $durations = $jsonconfig->{durations};
 			my @result = grep { lz($_) eq $arg } keys %$durations;
-			DateTime::Duration->new(minutes => $durations->{$result[0]});
+			scalar @result > 0
+				? DateTime::Duration->new(minutes => $durations->{$result[0]})
+				: undef;
 		},
 
 		send_duration_invalid => sub {
@@ -113,7 +115,7 @@ sub new_fsm {
 		},
 
 		parse_datetime => sub {
-			my $arg = (@_);
+			my ($arg) = @_;
 			my $unixtime = str2time($arg);
 			if (defined $unixtime) {
 				my $result = DateTime->from_epoch(epoch => $unixtime, time_zone => "floating");
