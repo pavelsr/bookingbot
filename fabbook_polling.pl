@@ -8,7 +8,7 @@ use JSON qw(encode_json);
 use Mojolicious::Lite;
 use WWW::Telegram::BotAPI;
 
-use lib 'serikoff.lib';
+use lib "serikoff.lib";
 use Serikoff::Telegram::Keyboards qw(create_one_time_keyboard);
 use Serikoff::Telegram::Polling qw(get_last_messages);
 use Serikoff::Telegram::Restgram;
@@ -20,10 +20,10 @@ use Localization qw(lz);
 BEGIN { $ENV{TELEGRAM_BOTAPI_DEBUG} = 1 };
 
 my $api = WWW::Telegram::BotAPI->new(
-	token => '222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po'
+	token => "222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po"
 );
 
-my $jsonconfig = plugin 'JSONConfig';
+my $jsonconfig = plugin "JSONConfig";
 
 my $restgram = Serikoff::Telegram::Restgram->new();
 
@@ -36,6 +36,11 @@ my $sid = 0;
 my %machines = ();
 
 
+sub _log_info {
+	my ($session_id, $message) = @_;
+	app->log->info("[$session_id] " . $message);
+}
+
 # extract keys by screen hash
 sub extract_keys {
 	my $screen_hash = shift;
@@ -44,16 +49,95 @@ sub extract_keys {
 	for (@keyboard) {
 		push @keys, $_->{key};
 	}
-	return \@keys;
+	\@keys;
 }
 
-sub _log_info {
-	my ($session_id, $message) = @_;
-	app->log->info("[$session_id] " . $message);
+sub new_fsm {
+	my ($chat_id) = @_;
+
+	FSM->new(
+		send_start_message => sub {
+			$api->sendMessage({chat_id => $chat_id, text => lz("welcome")});
+		},
+
+		send_resources => sub {
+			$api->sendMessage({
+				chat_id => $chat_id,
+				text => lz("select_resource"),
+				reply_markup => create_one_time_keyboard($jsonconfig->{resources}, 1)
+			});
+		},
+
+		parse_resource => sub {
+			my ($input) = @_;
+			my $resources = $jsonconfig->{resources};
+			if (grep { $_ eq $input } @$resources) {
+				$input;
+			} else {
+				undef;
+			}
+		},
+
+		send_resource_invalid => sub {
+			$api->sendMessage({chat_id => $chat_id, text => lz("invalid_resource")});
+		},
+
+		send_durations => sub {
+			my $durations = $jsonconfig->{durations};
+
+			my @durations_menu =
+				map { lz($_->[1]) }
+				sort { $a->[0] <=> $b->[0] }
+				map { [$durations->{$_}, $_] } keys %$durations;
+
+			$api->sendMessage({
+				chat_id => $chat_id,
+				text => lz("select_duration"),
+				reply_markup => create_one_time_keyboard(\@durations_menu, 1)
+			});
+		},
+
+		parse_duration => sub {
+			my ($input) = @_;
+			my $durations = $jsonconfig->{durations};
+			my @result = grep { lz($_) eq $input } keys %$durations;
+			$durations->{$result[0]};
+		},
+
+		send_duration_invalid => sub {
+			$api->sendMessage({chat_id => $chat_id, text => lz("invalid_duration")});
+		},
+
+		send_datetime_picker => sub {
+			my $resource = shift;
+			$api->sendMessage({chat_id => $chat_id, text => lz("enter_date")});
+
+			#$api->sendMessage({
+			#chat_id => $chat_id,
+			#text => "Select day.",
+			#reply_markup => create_one_time_keyboard(
+			#map { $_->strftime("%a, %d %b %Y") } Resources::available_dates($resource), 1)
+			#});
+		},
+
+		parse_datetime => sub {
+			str2time(shift);
+		},
+
+		send_datetime_invalid => sub {
+			$api->sendMessage({chat_id => $chat_id, text => lz("invalid_date_format")});
+		},
+
+		book => sub {
+			my ($resource, $datetime) = @_;
+			Google::CalendarAPI::Events::insert($resource, $datetime);
+			$api->sendMessage({chat_id => $chat_id, text => lz("booked", $resource, scalar localtime $datetime)});
+		},
+	);
 }
 
 
-Google::CalendarAPI::auth('gapi.conf');
+Google::CalendarAPI::auth("gapi.conf");
 
 _log_info($sid, "ready to process incoming messages");
 
@@ -64,7 +148,7 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 
 		_log_info($sid, "new message: " . encode_json($update->{message}));
 
-		if (substr($update->{message}{text}, 0, 1) eq '%') {
+		if (substr($update->{message}{text}, 0, 1) eq "%") {
 			# temporary mode for restgram testing
 			_log_info($sid, "restgram testing");
 
@@ -75,48 +159,7 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 			$api->sendMessage({chat_id => $chat_id, text => $answer});
 		} else {
 			if (not exists $machines{$chat_id}) {
-				$machines{$chat_id} = FSM->new(
-					send_start_message => sub {
-						$api->sendMessage({chat_id => $chat_id, text => lz('welcome')});
-					},
-
-					send_resources_list => sub {
-						$api->sendMessage({
-							chat_id => $chat_id,
-							text => lz('select_resource'),
-							reply_markup => create_one_time_keyboard($jsonconfig->{resources}, 1)
-						});
-					},
-
-					parse_resource => sub {
-						my $resource = shift;
-						my $resources = $jsonconfig->{resources};
-						return grep { $_ eq $resource } @$resources;
-					},
-
-					send_resource_invalid => sub {
-						$api->sendMessage({chat_id => $chat_id, text => lz('invalid_resource')});
-					},
-
-					send_datetime_picker => sub {
-						my $resource = shift;
-						$api->sendMessage({chat_id => $chat_id, text => lz('enter_date')});
-					},
-
-					parse_datetime => sub {
-						return str2time(shift);
-					},
-
-					send_datetime_invalid => sub {
-						$api->sendMessage({chat_id => $chat_id, text => lz('invalid_date_format')});
-					},
-
-					book => sub {
-						my ($resource, $datetime) = @_;
-						Google::CalendarAPI::Events::insert($resource, $datetime);
-						$api->sendMessage({chat_id => $chat_id, text => lz('booked', $resource, scalar localtime $datetime)});
-					},
-				);
+				$machines{$chat_id} = new_fsm($chat_id);
 				_log_info($sid, "finite state machine created");
 			}
 			$machines{$chat_id}->next($update->{message});

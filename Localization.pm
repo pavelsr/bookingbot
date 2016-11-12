@@ -4,27 +4,33 @@ use strict;
 use warnings;
 use utf8;
 
-use parent ('Exporter');
+use parent ("Exporter");
 
 use Utils;
 
 my %strings = (
-	'English' => {
-		'welcome'                   => 'Hello! I am FabLab61 booking bot',
-		'select_resource'           => 'Select tool',
-		'invalid_resource'          => 'Invalid tool name (typo?)',
-		'enter_date'                => 'Enter date (example: 1 Jan 2017 12:00)',
-		'invalid_date_format'       => 'Invalid date format',
-		'booked'                    => 'You have booked %s at %s',
+	"English" => {
+		"welcome"                   => "Hello! I am FabLab61 booking bot",
+		"select_resource"           => "Select tool",
+		"invalid_resource"          => "Invalid tool name (typo?)",
+		"select_duration"           => "How long will you use the tool?",
+		"enter_date"                => "Enter date (example: 1 Jan 2017 12:00)",
+		"invalid_date_format"       => "Invalid date format",
+		"booked"                    => "You have booked %s at %s",
+
+		"30_min"                    => "30 minutes",
+		"1_hour"                    => "1 hour",
+		"2_hours"                   => "2 hours",
+		"3_hours"                   => "3 hours",
 	},
 
-	'Russian' => {
-		'welcome'                   => 'Привет! Я бот для бронирования оборудования FabLab61',
-		'select_resource'           => 'Выбери оборудование',
-		'invalid_resource'          => 'Нет такого оборудования (опечатка?)',
-		'enter_date'                => 'Введи дату (в формате 1 Jan 2017 12:00)',
-		'invalid_date_format'       => 'Неверный формат даты',
-		'booked'                    => 'Оборудование %s забронировано на дату %s',
+	"Russian" => {
+		"welcome"                   => "Привет! Я бот для бронирования оборудования FabLab61",
+		"select_resource"           => "Выбери оборудование",
+		"invalid_resource"          => "Нет такого оборудования (опечатка?)",
+		"enter_date"                => "Введи дату (в формате 1 Jan 2017 12:00)",
+		"invalid_date_format"       => "Неверный формат даты",
+		"booked"                    => "Оборудование %s забронировано на дату %s",
 	},
 );
 
@@ -33,7 +39,7 @@ sub languages {
 	\@result;
 }
 
-my $fallback = 'English';
+my $fallback = "English";
 my $language = $fallback;
 
 sub set_language {
@@ -61,10 +67,10 @@ sub lz {
 	} elsif (Utils::contains(_keys($fallback), $key)) {
 		sprintf($strings{$fallback}{$key}, @params);
 	} else {
-		undef;
+		$key;
 	}
 }
 
-our @EXPORT_OK = ('lz');
+our @EXPORT_OK = ("lz");
 
 1;

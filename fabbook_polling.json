@@ -5,5 +5,11 @@
 		"Lasersaur",
 		"Shapeoko2",
 		"Silhouette"
-	]
+	],
+	"durations": {
+		"30_min": 30,
+		"1_hour": 60,
+		"2_hours": 120,
+		"3_hours": 180
+	}
 }
