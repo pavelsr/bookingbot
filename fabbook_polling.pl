@@ -79,7 +79,8 @@ sub new_fsm {
 		},
 
 		send_resource_invalid => sub {
-			$api->sendMessage({chat_id => $chat_id, text => lz("invalid_resource")});
+			$api->sendMessage({
+					chat_id => $chat_id, text => lz("invalid_resource")});
 		},
 
 		send_durations => sub {
@@ -107,7 +108,8 @@ sub new_fsm {
 		},
 
 		send_duration_invalid => sub {
-			$api->sendMessage({chat_id => $chat_id, text => lz("invalid_duration")});
+			$api->sendMessage({
+					chat_id => $chat_id, text => lz("invalid_duration")});
 		},
 
 		send_datetime_picker => sub {
@@ -119,14 +121,17 @@ sub new_fsm {
 			my ($arg) = @_;
 			my $unixtime = str2time($arg);
 			if (defined $unixtime) {
-				my $result = DateTime->from_epoch(epoch => $unixtime, time_zone => "floating");
+				my $result = DateTime->from_epoch(
+					epoch => $unixtime, time_zone => "floating");
+
 				$result->set_time_zone($jsonconfig->{timezone});
 				$result;
 			}
 		},
 
 		send_datetime_invalid => sub {
-			$api->sendMessage({chat_id => $chat_id, text => lz("invalid_date_format")});
+			$api->sendMessage({
+					chat_id => $chat_id, text => lz("invalid_date_format")});
 		},
 
 		book => sub {
@@ -145,7 +150,9 @@ sub new_fsm {
 }
 
 
-Google::CalendarAPI::auth("gapi.conf", "fablab61ru\@gmail.com", $jsonconfig->{timezone});
+Google::CalendarAPI::auth(
+	"gapi.conf", "fablab61ru\@gmail.com", $jsonconfig->{timezone});
+
 
 _log_info($sid, "ready to process incoming messages");
 
@@ -167,7 +174,9 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 			$api->sendMessage({chat_id => $chat_id, text => $answer});
 		} else {
 			if (not exists $machines{$chat_id}) {
-				$machines{$chat_id} = new_fsm($update->{message}->{from}->{id}, $chat_id);
+				$machines{$chat_id} = new_fsm(
+					$update->{message}->{from}->{id}, $chat_id);
+
 				_log_info($sid, "finite state machine created");
 			}
 			$machines{$chat_id}->next($update->{message});

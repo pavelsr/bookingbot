@@ -32,7 +32,8 @@ sub new {
 					CANCEL => \&_cancel,
 					DURATION => sub {
 						my ($state, %message) = @_;
-						_parse_value($state, $callbacks{parse_resource}, $message{text});
+						_parse_value($state,
+							$callbacks{parse_resource}, $message{text});
 					},
 					RESOURCE_INVALID => 1
 				],
@@ -54,7 +55,8 @@ sub new {
 					CANCEL => \&_cancel,
 					DATETIME => sub {
 						my ($state, %message) = @_;
-						_parse_value($state, $callbacks{parse_duration}, $message{text});
+						_parse_value($state,
+							$callbacks{parse_duration}, $message{text});
 					},
 					DURATION_INVALID => 1
 				],
@@ -76,7 +78,8 @@ sub new {
 					CANCEL => \&_cancel,
 					BOOK => sub {
 						my ($state, %message) = @_;
-						_parse_value($state, $callbacks{parse_datetime}, $message{text});
+						_parse_value($state,
+							$callbacks{parse_datetime}, $message{text});
 					},
 					DATETIME_INVALID => 1
 				],

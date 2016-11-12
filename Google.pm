@@ -35,8 +35,12 @@ sub insert {
 
 	my $event = {};
 	$event->{summary} = $summary;
-	$event->{start}{dateTime} = DateTime::Format::RFC3339->format_datetime($span->start);
-	$event->{end}{dateTime} = DateTime::Format::RFC3339->format_datetime($span->end);
+
+	$event->{start}{dateTime} =
+		DateTime::Format::RFC3339->format_datetime($span->start);
+
+	$event->{end}{dateTime} =
+		DateTime::Format::RFC3339->format_datetime($span->end);
 
 	$api->refresh_access_token_silent($user);
 	$api->add_event($user, $calendar, $event);
