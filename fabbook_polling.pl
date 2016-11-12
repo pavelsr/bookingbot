@@ -138,7 +138,7 @@ sub new_fsm {
 			my ($name, $datetime, $duration) = @_;
 
 			my $span = DateTime::Span->from_datetime_and_duration(
-				start => $start, duration => $duration);
+				start => $datetime, duration => $duration);
 			$resources->book($user_id, $name, $span);
 
 			my $datestr = $datetime->strftime("%a %b %d %T %Y");
