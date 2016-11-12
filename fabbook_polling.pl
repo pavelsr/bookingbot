@@ -134,7 +134,7 @@ sub new_fsm {
 }
 
 
-Google::CalendarAPI::auth("gapi.conf", "fablab61ru\@gmail.com");
+Google::CalendarAPI::auth("gapi.conf", "fablab61ru\@gmail.com", $jsonconfig->{timezone});
 
 _log_info($sid, "ready to process incoming messages");
 
