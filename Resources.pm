@@ -32,17 +32,13 @@ sub exists {
 }
 
 sub schedule {
-	my ($self, $name) = @_;
-	$self->{resources}->{$name}->schedule;
+	my ($self, $name, $span) = @_;
+	$self->{resources}->{$name}->schedule($span);
 }
 
 sub book {
-	my ($self, $user_id, $name, $datetime, $duration) = @_;
-
-	my $start = $datetime;
-	my $end = $start->clone->add_duration($duration);
-
-	$self->{resources}->{$name}->book($user_id, $start, $end);
+	my ($self, $user_id, $name, $span) = @_;
+	$self->{resources}->{$name}->book($user_id, $span);
 }
 
 1;

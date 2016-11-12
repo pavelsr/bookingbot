@@ -6,6 +6,7 @@ use common::sense;
 use Date::Parse qw(str2time);
 use DateTime;
 use DateTime::Duration;
+use DateTime::Span;
 use JSON qw(encode_json);
 use Mojolicious::Lite;
 use WWW::Telegram::BotAPI;
@@ -130,8 +131,15 @@ sub new_fsm {
 
 		book => sub {
 			my ($name, $datetime, $duration) = @_;
-			$resources->book($user_id, $name, $datetime, $duration);
-			$api->sendMessage({chat_id => $chat_id, text => lz("booked", $name, $datetime->strftime("%a %b %d %T %Y"))});
+
+			my $span = DateTime::Span->from_datetime_and_duration(
+				start => $start, duration => $duration);
+			$resources->book($user_id, $name, $span);
+
+			my $datestr = $datetime->strftime("%a %b %d %T %Y");
+			$api->sendMessage({
+					chat_id => $chat_id,
+					text => lz("booked", $name, $datestr)});
 		},
 	);
 }

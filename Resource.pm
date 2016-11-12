@@ -15,8 +15,8 @@ sub schedule {
 }
 
 sub book {
-	my ($self, $user_id, $start, $end) = @_;
-	Google::CalendarAPI::Events::insert($self->{calendar}, $user_id, $start, $end);
+	my ($self, $user_id, $span) = @_;
+	Google::CalendarAPI::Events::insert($self->{calendar}, $user_id, $span);
 }
 
 1;
