@@ -40,7 +40,7 @@ sub book {
 	my ($self, $user_id, $name, $datetime, $duration) = @_;
 
 	my $start = $datetime;
-	my $end = $datetime + $duration * 60;
+	my $end = $start->clone->add_duration($duration);
 
 	$self->{resources}->{$name}->book($user_id, $start, $end);
 }
