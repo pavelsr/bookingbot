@@ -6,8 +6,6 @@ use utf8;
 
 use parent ("Exporter");
 
-use Utils;
-
 my %strings = (
 	"English" => {
 		"welcome"                   => "Hello! I am FabLab61 booking bot",
@@ -45,7 +43,8 @@ my $language = $fallback;
 sub set_language {
 	my ($new_language) = @_;
 
-	my $result = Utils::contains(languages, $new_language);
+	my $languages_ = languages;
+	my $result = grep { $_ eq $new_language } @$languages_;
 	if ($result) {
 		$language = $new_language;
 	}
@@ -62,9 +61,9 @@ sub lz {
 		\@result;
 	};
 
-	if (Utils::contains(_keys($language), $key)) {
+	if (grep { $_ eq $key } keys %{$strings{$language}}) {
 		sprintf($strings{$language}{$key}, @params);
-	} elsif (Utils::contains(_keys($fallback), $key)) {
+	} elsif (grep { $_ eq $key } keys %{$strings{$fallback}}) {
 		sprintf($strings{$fallback}{$key}, @params);
 	} else {
 		$key;
