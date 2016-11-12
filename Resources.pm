@@ -21,7 +21,7 @@ sub new {
 sub names {
 	my ($self) = @_;
 	my $resources = $self->{resources};
-	my @result = keys %$resources;
+	my @result = sort { $a cmp $b } keys %$resources;
 	\@result;
 }
 
