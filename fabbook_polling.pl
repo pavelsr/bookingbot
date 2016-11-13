@@ -49,17 +49,6 @@ sub _log_info {
 	app->log->info("[$session_id] " . $message);
 }
 
-# extract keys by screen hash
-sub extract_keys {
-	my $screen_hash = shift;
-	my @keys;
-	my @keyboard = @{$screen_hash->{$jsonconfig->{keyboard_key_at_screen}}};
-	for (@keyboard) {
-		push @keys, $_->{key};
-	}
-	\@keys;
-}
-
 sub new_fsm {
 	my ($user, $chat_id) = @_;
 
