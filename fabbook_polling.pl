@@ -18,7 +18,7 @@ use Serikoff::Telegram::Restgram;
 
 use FSM;
 use Google;
-use Localization qw(lz);
+use Localization qw(lz dt);
 use Resources;
 
 BEGIN { $ENV{TELEGRAM_BOTAPI_DEBUG} = 1 };
@@ -86,7 +86,7 @@ sub new_fsm {
 		send_durations => sub {
 			my $durations = $jsonconfig->{durations};
 
-			my @durations_menu =
+			my @keyboard =
 				map { lz($_->[1]) }
 				sort { $a->[0] <=> $b->[0] }
 				map { [$durations->{$_}, $_] } keys %$durations;
@@ -94,7 +94,7 @@ sub new_fsm {
 			$api->sendMessage({
 				chat_id => $chat_id,
 				text => lz("select_duration"),
-				reply_markup => create_one_time_keyboard(\@durations_menu, 1)
+				reply_markup => create_one_time_keyboard(\@keyboard, 1)
 			});
 		},
 
@@ -112,9 +112,17 @@ sub new_fsm {
 					chat_id => $chat_id, text => lz("invalid_duration")});
 		},
 
-		send_datetime_picker => sub {
-			my $resource = shift;
-			$api->sendMessage({chat_id => $chat_id, text => lz("enter_date")});
+		send_datetime_selector => sub {
+			my ($resource, $duration) = @_;
+
+			my $vacancies = $resources->vacancies($resource, $duration);
+			my @keyboard = map { dt($_->start) } @$vacancies;
+
+			$api->sendMessage({
+				chat_id => $chat_id,
+				text => lz("select_datetime"),
+				reply_markup => create_one_time_keyboard(\@keyboard, 1)
+			});
 		},
 
 		parse_datetime => sub {
@@ -126,12 +134,14 @@ sub new_fsm {
 
 				$result->set_time_zone($jsonconfig->{timezone});
 				$result;
+			} else {
+				undef;
 			}
 		},
 
 		send_datetime_invalid => sub {
 			$api->sendMessage({
-					chat_id => $chat_id, text => lz("invalid_date_format")});
+					chat_id => $chat_id, text => lz("invalid_datetime")});
 		},
 
 		book => sub {
@@ -141,7 +151,7 @@ sub new_fsm {
 				start => $datetime, duration => $duration);
 			$resources->book($user_id, $name, $span);
 
-			my $datestr = $datetime->strftime("%a %b %d %T %Y");
+			my $datestr = dt($datetime);
 			$api->sendMessage({
 					chat_id => $chat_id,
 					text => lz("booked", $name, $datestr)});

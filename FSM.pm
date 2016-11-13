@@ -72,7 +72,11 @@ sub new {
 
 			DATETIME => {
 				do => sub {
-					$callbacks{send_datetime_picker}();
+					my $state = shift;
+					my $machine = $state->machine;
+					my $resource = $machine->last_result("RESOURCE");
+					my $duration = $machine->last_result("DURATION");
+					$callbacks{send_datetime_selector}($resource, $duration);
 				},
 				rules => [
 					CANCEL => \&_cancel,

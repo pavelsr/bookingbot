@@ -8,12 +8,13 @@ use parent ("Exporter");
 
 my %strings = (
 	"English" => {
+		"datetime_format"           => "%%d %%b %%H:%%M",
+
 		"welcome"                   => "Hello! I am FabLab61 booking bot",
 		"select_resource"           => "Select tool",
 		"invalid_resource"          => "Invalid tool name (typo?)",
 		"select_duration"           => "How long will you use the tool?",
-		"enter_date"                => "Enter date (example: 1 Jan 2017 12:00)",
-		"invalid_date_format"       => "Invalid date format",
+		"select_datetime"           => "Select convenient time",
 		"booked"                    => "You have booked %s at %s",
 
 		"30_min"                    => "30 minutes",
@@ -26,8 +27,7 @@ my %strings = (
 		"welcome"                   => "Привет! Я бот для бронирования оборудования FabLab61",
 		"select_resource"           => "Выбери оборудование",
 		"invalid_resource"          => "Нет такого оборудования (опечатка?)",
-		"enter_date"                => "Введи дату (в формате 1 Jan 2017 12:00)",
-		"invalid_date_format"       => "Неверный формат даты",
+		"select_datetime"           => "Выбери подходящее время",
 		"booked"                    => "Оборудование %s забронировано на дату %s",
 	},
 );
@@ -70,6 +70,11 @@ sub lz {
 	}
 }
 
-our @EXPORT_OK = ("lz");
+sub dt {
+	my ($datetime) = @_;
+	$datetime->strftime(lz("datetime_format"));
+}
+
+our @EXPORT_OK = ("lz", "dt");
 
 1;
