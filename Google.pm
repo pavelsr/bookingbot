@@ -50,7 +50,7 @@ sub list {
 		push @result, \%transparentevent;
 
 		my $opacityspan = $dtf->span_d(
-			$start->clone->add(minutes => 15), {minutes => 300});
+			$start->clone->add(minutes => 30), {minutes => 90});
 		my %opacityevent = (
 			summary => "251352487",
 			span => $opacityspan,
