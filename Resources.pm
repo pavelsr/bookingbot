@@ -31,9 +31,9 @@ sub exists {
 	grep { $_ eq $name } keys %$resources;
 }
 
-sub schedule {
-	my ($self, $name, $span) = @_;
-	$self->{resources}->{$name}->schedule($span);
+sub vacancies {
+	my ($self, $name, $duration, $span) = @_;
+	$self->{resources}->{$name}->vacancies($duration, $span);
 }
 
 sub book {
