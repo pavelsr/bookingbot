@@ -4,9 +4,6 @@ package BookingBot;
 
 use common::sense;
 use Date::Parse qw(str2time);
-use DateTime;
-use DateTime::Duration;
-use DateTime::Span;
 use JSON qw(encode_json);
 use Mojolicious::Lite;
 use WWW::Telegram::BotAPI;
@@ -16,6 +13,7 @@ use Serikoff::Telegram::Keyboards qw(create_one_time_keyboard);
 use Serikoff::Telegram::Polling qw(get_last_messages);
 use Serikoff::Telegram::Restgram;
 
+use DateTimeFactory;
 use FSM;
 use Google;
 use Localization qw(lz dt);
@@ -30,6 +28,7 @@ my $api = WWW::Telegram::BotAPI->new(
 my $jsonconfig = plugin "JSONConfig";
 
 my $restgram = Serikoff::Telegram::Restgram->new();
+my $dtf = DateTimeFactory->new($jsonconfig->{timezone});
 my $resources = Resources->new($jsonconfig->{resources});
 
 my $polling_interval = 1;
@@ -103,7 +102,7 @@ sub new_fsm {
 			my $durations = $jsonconfig->{durations};
 			my @result = grep { lz($_) eq $arg } keys %$durations;
 			scalar @result > 0
-				? DateTime::Duration->new(minutes => $durations->{$result[0]})
+				? $dtf->dur({minutes => $durations->{$result[0]}})
 				: undef;
 		},
 
@@ -129,10 +128,8 @@ sub new_fsm {
 			my ($arg) = @_;
 			my $unixtime = str2time($arg);
 			if (defined $unixtime) {
-				my $result = DateTime->from_epoch(
-					epoch => $unixtime, time_zone => "floating");
+				my $result = $dtf->epoch($unixtime);
 
-				$result->set_time_zone($jsonconfig->{timezone});
 				$result;
 			} else {
 				undef;
@@ -147,9 +144,8 @@ sub new_fsm {
 		book => sub {
 			my ($name, $datetime, $duration) = @_;
 
-			my $span = DateTime::Span->from_datetime_and_duration(
-				start => $datetime, duration => $duration);
-			$resources->book($user_id, $name, $span);
+			$resources->book($user_id, $name,
+				$dtf->span_d($datetime, $duration));
 
 			my $datestr = dt($datetime);
 			$api->sendMessage({

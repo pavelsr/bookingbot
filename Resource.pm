@@ -3,28 +3,30 @@ package Resource;
 use strict;
 use warnings;
 
-use DateTime::SpanSet;
-
+use DateTimeFactory;
 use Google;
 
 sub new {
-	my ($class, $self) = @_;
-	bless $self, $class;
+	my ($class, $record) = @_;
+	my %self = ((dtf => DateTimeFactory->new()), %$record);
+	bless \%self, $class;
 }
 
 sub vacancies {
 	my ($self, $duration, $span) = @_;
+
+	my $dtf = $self->{dtf};
 
 	my $events = Google::CalendarAPI::Events::list($self->{calendar}, $span);
 
 	my @free = map { $_->{span} } grep { $_->{transparent} } @$events;
 	my @busy = map { $_->{span} } grep { not $_->{transparent} } @$events;
 
-	my $freeset = DateTime::SpanSet->from_spans(spans => \@free);
-	my $busyset = DateTime::SpanSet->from_spans(spans => \@busy);
+	my $freeset = $dtf->spanset(\@free);
+	my $busyset = $dtf->spanset(\@busy);
 
 	my @result = $freeset->complement($busyset)->grep(sub {
-		DateTime::Duration->compare($duration, $_->duration, $_->start) <= 0;
+		$dtf->durcmp($duration, $_->duration, $_->start) <= 0;
 	})->as_list;
 
 	\@result;

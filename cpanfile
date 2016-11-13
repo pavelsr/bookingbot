@@ -11,4 +11,5 @@ requires "FSA::Rules";
 requires "JSON";
 requires "List::MoreUtils";
 requires "Mojolicious::Lite";
+requires "Scalar::Util";
 requires "WWW::Telegram::BotAPI";
