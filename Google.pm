@@ -25,9 +25,45 @@ package Google::CalendarAPI::Events;
 use strict;
 use warnings;
 
+use DateTime::Span;
 use DateTime::Format::RFC3339;
 
 sub list {
+	my ($calendar, $span) = @_;
+	$span = $span // DateTime::Span->from_datetime_and_duration(
+		start => DateTime->today(time_zone => $timezone)->add(days => 1),
+		days => 7);
+
+	my $start = $span->start;
+
+	my @result = ();
+	while (1) {
+		my $transparentspan = DateTime::Span->from_datetime_and_duration(
+			start => $start->clone, hours => 4);
+
+		if (not $span->contains($transparentspan)) {
+			last;
+		}
+
+		my %event = (
+			summary => "251352487",
+			transparent => 1,
+			span => $transparentspan,
+		);
+		push @result, \%event;
+
+		my $opacityspan = DateTime::Span->from_datetime_and_duration(
+			start => $start->clone->add(hours => 1), minutes => 90);
+		my %opacityevent = (
+			summary => "251352487",
+			span => $opacityspan,
+		);
+		push @result, \%opacityevent;
+
+		$start->add(hours => 6);
+	}
+
+	\@result;
 }
 
 sub insert {
