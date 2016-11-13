@@ -9,9 +9,9 @@ sub new {
 	my ($class, $config) = @_;
 
 	my %resources = ();
-	foreach my $record (@$config) {
-		my $resource = Resource->new($record->{calendar});
-		$resources{$record->{name}} = $resource;
+	foreach my $id (keys %$config) {
+		my $record = $config->{$id};
+		$resources{$id} = Resource->new($record);
 	}
 
 	my $self = {resources => \%resources};

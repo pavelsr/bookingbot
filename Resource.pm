@@ -8,8 +8,7 @@ use DateTime::SpanSet;
 use Google;
 
 sub new {
-	my ($class, $calendar) = @_;
-	my $self = {calendar => $calendar};
+	my ($class, $self) = @_;
 	bless $self, $class;
 }
 

@@ -1,22 +1,27 @@
 {
 	"timezone": "Europe/Moscow",
 
-	"resources": [{
-		"name": "CTC 3D printer",
-		"calendar": "primary"
-	}, {
-		"name": "Reprap 3D printer",
-		"calendar": "primary"
-	}, {
-		"name": "Lasersaur",
-		"calendar": "b7qv527m99oqlq3md28cof16jc@group.calendar.google.com"
-	}, {
-		"name": "Shapeoko",
-		"calendar": "201re7djrdeeato14m23e600mo@group.calendar.google.com"
-	}, {
-		"name": "Silhouette",
-		"calendar": "primary"
-	}],
+	"resources": {
+		"CTC 3D printer": {
+			"calendar": "primary"
+		},
+
+		"Reprap 3D printer": {
+			"calendar": "primary"
+		},
+
+		"Lasersaur": {
+			"calendar": "b7qv527m99oqlq3md28cof16jc@group.calendar.google.com"
+		},
+
+		"Shapeoko": {
+			"calendar": "201re7djrdeeato14m23e600mo@group.calendar.google.com"
+		},
+
+		"Silhouette": {
+			"calendar": "primary"
+		}
+	},
 
 	"durations": {
 		"30_min": 30,
