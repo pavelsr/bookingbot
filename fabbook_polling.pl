@@ -102,7 +102,7 @@ sub new_fsm {
 			my $durations = $jsonconfig->{durations};
 			my @result = grep { lz($_) eq $arg } keys %$durations;
 			scalar @result > 0
-				? $dtf->dur({minutes => $durations->{$result[0]}})
+				? $dtf->dur(minutes => $durations->{$result[0]})
 				: undef;
 		},
 

@@ -36,8 +36,8 @@ sub epoch {
 }
 
 sub dur {
-	my ($self, $params) = @_;
-	DateTime::Duration->new(%$params);
+	my ($self, %params) = @_;
+	DateTime::Duration->new(%params);
 }
 
 sub durcmp {
@@ -52,7 +52,7 @@ sub rfc3339 {
 
 sub span_d {
 	my ($self, $datetime, $data) = @_;
-	my $duration = blessed($data) ? $data : $self->dur($data);
+	my $duration = blessed($data) ? $data : $self->dur(%$data);
 	DateTime::Span->from_datetime_and_duration(
 		start => $datetime, duration => $duration);
 }
