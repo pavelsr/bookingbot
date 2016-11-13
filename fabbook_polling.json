@@ -28,5 +28,8 @@
 		"1_hour": 60,
 		"2_hours": 120,
 		"3_hours": 180
+	},
+
+	"instructors": {
 	}
 }

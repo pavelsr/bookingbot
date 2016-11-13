@@ -17,33 +17,28 @@ use DateTimeFactory;
 use Contacts;
 use FSM;
 use Google;
+use Groups;
 use Instructors;
 use Localization qw(lz dt);
 use Resources;
 
-BEGIN { $ENV{TELEGRAM_BOTAPI_DEBUG} = 1 };
+my $jsonconfig = plugin "JSONConfig";
 
+BEGIN { $ENV{TELEGRAM_BOTAPI_DEBUG} = 1 };
 my $api = WWW::Telegram::BotAPI->new(
 	token => "222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po"
 );
 
-my $jsonconfig = plugin "JSONConfig";
-
-my $restgram = Serikoff::Telegram::Restgram->new();
-my $dtf = DateTimeFactory->new($jsonconfig->{timezone});
 my $contacts = Contacts->new($api);
+my $dtf = DateTimeFactory->new($jsonconfig->{timezone});
+my $groups = Groups->new($api->getMe->{result}->{id});
+my $instructors = Instructors->new($api, $contacts, $groups, $jsonconfig->{instructors});
 my $resources = Resources->new($jsonconfig->{resources});
-my $instructors = Instructors->new($api, $contacts, $jsonconfig->{instructors});
-
-my $polling_interval = 1;
+my $restgram = Serikoff::Telegram::Restgram->new();
+my %machines = ();
 
 # sid - session id, used in logs to distinguish one session from another
 my $sid = 0;
-
-# chat to state machine hash
-my %machines = ();
-
-
 sub _log_info {
 	my ($session_id, $message) = @_;
 	app->log->info("[$session_id] " . $message);
@@ -65,7 +60,6 @@ sub new_fsm {
 			my ($contact) = @_;
 			if (defined $contact) {
 				$contacts->add($user->{id}, $contact);
-				warn "saved!";
 				1;
 			}
 		},
@@ -190,6 +184,8 @@ Google::CalendarAPI::auth(
 
 _log_info($sid, "ready to process incoming messages");
 
+
+my $polling_interval = 1;
 Mojo::IOLoop->recurring($polling_interval => sub {
 	my $hash = get_last_messages($api);
 	while (my ($chat_id, $update) = each(%$hash)) {
@@ -200,7 +196,13 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 				or not defined $update->{message}->{from}) {
 			_log_info($sid, "unknown update - ignored");
 		} elsif ($chat_id ne $update->{message}->{from}->{id}) {
-			_log_info($sid, "non-private message ignored");
+			if (defined $update->{message}->{new_chat_participant}
+					or defined $update->{message}->{left_chat_participant}) {
+				$groups->process($update->{message});
+				_log_info($sid, "group message processed");
+			} else {
+				_log_info($sid, "non-private message ignored");
+			}
 		} else {
 			my $user = $update->{message}->{from};
 			_log_info($sid, "new message: " . encode_json($update->{message}));

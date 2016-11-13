@@ -7,7 +7,7 @@ use Instructor;
 use Localization qw(lz dt);
 
 sub new {
-	my ($class, $api, $contacts, $config) = @_;
+	my ($class, $api, $contacts, $groups, $config) = @_;
 
 	my %instructors = ();
 	foreach my $id (keys %$config) {
@@ -15,7 +15,7 @@ sub new {
 		$instructors{$id} = Instructor->new($api, $record);
 	}
 
-	my $self = {api => $api, contacts => $contacts, instructors => \%instructors};
+	my $self = {api => $api, contacts => $contacts, groups => $groups, instructors => \%instructors};
 	bless $self, $class;
 }
 
@@ -34,12 +34,14 @@ sub notify_new_book {
 	});
 	$self->{contacts}->send($id, $user->{id});
 
-#	$self->{api}->sendMessage({
-#		chat_id => $group,
-#		text => lz("group_new_book", $id, $resource,
-#			dt($span->start), dt($span->end))
-#	});
-#	$self->{contacts}->send($group, $user->{id});
+	foreach my $group (@{$self->{groups}->{groups}}) {
+		$self->{api}->sendMessage({
+			chat_id => $group,
+			text => lz("group_new_book", $id, $resource,
+				dt($span->start), dt($span->end))
+		});
+		$self->{contacts}->send($group, $user->{id});
+	}
 }
 
 1;
