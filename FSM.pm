@@ -29,7 +29,9 @@ sub new {
 					$callbacks{send_resources}();
 				},
 				rules => [
+					START => \&_start,
 					CANCEL => \&_cancel,
+
 					DURATION => sub {
 						my ($state, %message) = @_;
 						_parse_value($state,
@@ -52,7 +54,9 @@ sub new {
 					$callbacks{send_durations}();
 				},
 				rules => [
+					START => \&_start,
 					CANCEL => \&_cancel,
+
 					DATETIME => sub {
 						my ($state, %message) = @_;
 						_parse_value($state,
@@ -81,7 +85,9 @@ sub new {
 					$callbacks{send_datetime_selector}($resource, $duration);
 				},
 				rules => [
+					START => \&_start,
 					CANCEL => \&_cancel,
+
 					INSTRUCTOR => sub {
 						my ($state, %message) = @_;
 						_parse_value($state,
@@ -161,6 +167,11 @@ sub next {
 		$self->{fsa}->switch(%$message);
 		$last_message = $self->{fsa}->last_message;
 	} while (defined $last_message and $last_message eq "transition")
+}
+
+sub _start {
+	my ($state, %message) = @_;
+	$message{text} eq "/start";
 }
 
 sub _cancel {
