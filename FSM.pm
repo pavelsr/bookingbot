@@ -61,6 +61,8 @@ sub new {
 					if (not defined $callbacks{send_resources}()) {
 						$state->message("transition");
 						$state->result(undef);
+					} else {
+						$state->result(1);
 					}
 				},
 				rules => [
@@ -112,6 +114,8 @@ sub new {
 					if (not defined $callbacks{send_durations}($resource)) {
 						$state->message("transition");
 						$state->result(undef);
+					} else {
+						$state->result(1);
 					}
 				},
 				rules => [
