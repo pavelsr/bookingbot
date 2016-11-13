@@ -184,7 +184,11 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 
 		_log_info($sid, "new message: " . encode_json($update->{message}));
 
-		if (substr($update->{message}{text}, 0, 1) eq "%") {
+		my $user = $update->{message}->{from};
+
+		if ($chat_id ne $user->{id}) {
+			_log_info($sid, "non-private message ignored");
+		} elsif (substr($update->{message}{text}, 0, 1) eq "%") {
 			# temporary mode for restgram testing
 			_log_info($sid, "restgram testing");
 
@@ -195,8 +199,7 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 			$api->sendMessage({chat_id => $chat_id, text => $answer});
 		} else {
 			if (not exists $machines{$chat_id}) {
-				$machines{$chat_id} = new_fsm(
-					$update->{message}->{from}, $chat_id);
+				$machines{$chat_id} = new_fsm($user, $chat_id);
 
 				_log_info($sid, "finite state machine created");
 			}
