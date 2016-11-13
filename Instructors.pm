@@ -19,6 +19,11 @@ sub new {
 	bless $self, $class;
 }
 
+sub exists {
+	my ($self, $id) = @_;
+	defined $self->{instructors}->{$id};
+}
+
 sub share_contact {
 	my ($self, $id, $chat_id) = @_;
 	$self->{instructors}->{$id}->share_contact($chat_id);

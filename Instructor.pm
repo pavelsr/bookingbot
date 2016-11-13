@@ -25,6 +25,9 @@ sub name {
 sub share_contact {
 	my ($self, $chat_id) = @_;
 
+	$self->{api}->sendMessage({chat_id => $chat_id,
+		text => lz("instructor_contact")});
+
 	try {
 		$self->{api}->sendContact({chat_id => $chat_id,
 			phone_number => $self->{phone_number},

@@ -203,9 +203,11 @@ sub new_fsm {
 			$api->sendMessage({
 				chat_id => $chat_id,
 				text => lz("booked", $resource, dt($datetime))});
-			$instructors->share_contact($instructor, $chat_id);
 
-			$instructors->notify_new_book($instructor, $user, $resource, $span);
+			if ($instructors->exists($instructor)) {
+				$instructors->share_contact($instructor, $chat_id);
+				$instructors->notify_new_book($instructor, $user, $resource, $span);
+			}
 		},
 
 		send_refresh => sub {
