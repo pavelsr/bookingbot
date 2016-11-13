@@ -59,7 +59,7 @@ sub extract_keys {
 }
 
 sub new_fsm {
-	my ($user_id, $chat_id) = @_;
+	my ($user, $chat_id) = @_;
 
 	FSM->new(
 		send_start_message => sub {
@@ -157,17 +157,15 @@ sub new_fsm {
 		book => sub {
 			my ($resource, $datetime, $duration, $instructor) = @_;
 
-			$resources->book($user_id, $resource,
-				$dtf->span_d($datetime, $duration));
+			my $span = $dtf->span_d($datetime, $duration);
+			$resources->book($user->{id}, $resource, $span);
 
 			$api->sendMessage({
 					chat_id => $chat_id,
 					text => lz("booked", $resource, dt($datetime))});
-			$api->sendMessage({
-					chat_id => $chat_id,
-					text => lz("instructor_contact")});
-
 			$instructors->share_contact($instructor, $chat_id);
+
+			$instructors->notify_new_book($instructor, $user, $resource, $span);
 		},
 	);
 }
@@ -198,7 +196,7 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 		} else {
 			if (not exists $machines{$chat_id}) {
 				$machines{$chat_id} = new_fsm(
-					$update->{message}->{from}->{id}, $chat_id);
+					$update->{message}->{from}, $chat_id);
 
 				_log_info($sid, "finite state machine created");
 			}
