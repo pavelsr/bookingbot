@@ -37,8 +37,8 @@ sub notify_new_book {
 	foreach my $group (@{$self->{groups}->{groups}}) {
 		$self->{api}->sendMessage({
 			chat_id => $group,
-			text => lz("group_new_book", $id, $resource,
-				dt($span->start), dt($span->end))
+			text => lz("group_new_book", $self->{instructors}->{$id}->name,
+				$resource, dt($span->start), dt($span->end))
 		});
 		$self->{contacts}->send($group, $user->{id});
 	}

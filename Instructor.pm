@@ -9,6 +9,12 @@ sub new {
 	bless \%self, $class;
 }
 
+sub name {
+	my ($self) = @_;
+	$self->{first_name} .
+		(defined $self->{last_name} ? " " . $self->{last_name} : "");
+}
+
 sub share_contact {
 	my ($self, $chat_id) = @_;
 	$self->{api}->sendContact({
