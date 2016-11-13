@@ -16,7 +16,8 @@ sub process {
 		push @{$self->{groups}}, $message->{chat}->{id};
 	} elsif (defined $message->{left_chat_participant}
 			and $message->{left_chat_participant}->{id} eq $self->{myid}) {
-		$self->{groups} = grep { $_ ne $message->{chat}->{id} } @{$self->{groups}};
+		my @groups = grep { $_ ne $message->{chat}->{id} } @{$self->{groups}};
+		$self->{groups} = \@groups;
 	}
 }
 
