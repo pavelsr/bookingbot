@@ -14,6 +14,7 @@ use Serikoff::Telegram::Polling qw(get_last_messages);
 use Serikoff::Telegram::Restgram;
 
 use DateTimeFactory;
+use Contacts;
 use FSM;
 use Google;
 use Instructors;
@@ -30,8 +31,9 @@ my $jsonconfig = plugin "JSONConfig";
 
 my $restgram = Serikoff::Telegram::Restgram->new();
 my $dtf = DateTimeFactory->new($jsonconfig->{timezone});
+my $contacts = Contacts->new($api);
 my $resources = Resources->new($jsonconfig->{resources});
-my $instructors = Instructors->new($api, $jsonconfig->{instructors});
+my $instructors = Instructors->new($api, $contacts, $jsonconfig->{instructors});
 
 my $polling_interval = 1;
 
@@ -63,7 +65,29 @@ sub new_fsm {
 
 	FSM->new(
 		send_start_message => sub {
-			$api->sendMessage({chat_id => $chat_id, text => lz("welcome")});
+			$api->sendMessage({chat_id => $chat_id, text => lz("start")});
+		},
+
+		send_contact_message => sub {
+			$api->sendMessage({chat_id => $chat_id, text => lz("contact")});
+		},
+
+		save_contact => sub {
+			my ($contact) = @_;
+			if (defined $contact) {
+				$contacts->add($user->{id}, $contact);
+				warn "saved!";
+				1;
+			}
+		},
+
+		send_contact_failed => sub {
+			$api->sendMessage({
+					chat_id => $chat_id, text => lz("invalid_contact")});
+		},
+
+		send_begin_message => sub {
+			$api->sendMessage({chat_id => $chat_id, text => lz("begin")});
 		},
 
 		send_resources => sub {
@@ -79,7 +103,7 @@ sub new_fsm {
 			$resources->exists($name) ? $name : undef;
 		},
 
-		send_resource_invalid => sub {
+		send_resource_failed => sub {
 			$api->sendMessage({
 					chat_id => $chat_id, text => lz("invalid_resource")});
 		},
@@ -108,7 +132,7 @@ sub new_fsm {
 				: undef;
 		},
 
-		send_duration_invalid => sub {
+		send_duration_failed => sub {
 			$api->sendMessage({
 					chat_id => $chat_id, text => lz("invalid_duration")});
 		},
@@ -132,7 +156,7 @@ sub new_fsm {
 			defined $unixtime ? $dtf->epoch($unixtime) : undef;
 		},
 
-		send_datetime_invalid => sub {
+		send_datetime_failed => sub {
 			$api->sendMessage({
 					chat_id => $chat_id, text => lz("invalid_datetime")});
 		},
@@ -149,7 +173,7 @@ sub new_fsm {
 			scalar @result ? $result[0] : undef;
 		},
 
-		send_instructor_invalid => sub {
+		send_instructor_failed => sub {
 			$api->sendMessage({
 					chat_id => $chat_id, text => lz("instructor_not_found")});
 		},
@@ -182,13 +206,16 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 	while (my ($chat_id, $update) = each(%$hash)) {
 		$sid++;
 
-		_log_info($sid, "new message: " . encode_json($update->{message}));
-
-		my $user = $update->{message}->{from};
-
-		if ($chat_id ne $user->{id}) {
+		if (not defined $update
+				or not defined $update->{message}
+				or not defined $update->{message}->{from}) {
+			_log_info($sid, "unknown update - ignored");
+		} elsif ($chat_id ne $update->{message}->{from}->{id}) {
 			_log_info($sid, "non-private message ignored");
 		} else {
+			my $user = $update->{message}->{from};
+			_log_info($sid, "new message: " . encode_json($update->{message}));
+
 			if (defined $update->{message}{text}
 					and substr($update->{message}{text}, 0, 1) eq "%") {
 				# temporary mode for restgram testing
@@ -205,7 +232,7 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 					$machines{$chat_id} = new_fsm($user, $chat_id);
 					_log_info($sid, "finite state machine created");
 				}
-				$machines{$chat_id}->next($update->{message});
+				$machines{$chat_id}->next($update);
 				_log_info($sid, "moved to next state");
 			}
 		}
