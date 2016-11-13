@@ -127,7 +127,7 @@ sub new_fsm {
 				$api->sendMessage({
 					chat_id => $chat_id,
 					text => lz("select_duration"),
-					REPLY_MARKUP => create_one_time_keyboard(\@keyboard, 1)
+					reply_markup => create_one_time_keyboard(\@keyboard, 1)
 				});
 			} else {
 				undef;
