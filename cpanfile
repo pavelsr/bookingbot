@@ -12,4 +12,5 @@ requires "JSON";
 requires "List::MoreUtils";
 requires "Mojolicious::Lite";
 requires "Scalar::Util";
+requires "Try::Tiny";
 requires "WWW::Telegram::BotAPI";
