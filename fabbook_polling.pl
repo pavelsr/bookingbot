@@ -188,23 +188,26 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 
 		if ($chat_id ne $user->{id}) {
 			_log_info($sid, "non-private message ignored");
-		} elsif (substr($update->{message}{text}, 0, 1) eq "%") {
-			# temporary mode for restgram testing
-			_log_info($sid, "restgram testing");
-
-			my $phone = substr($update->{message}{text}, 1);
-			my $answer = encode_json($restgram->get_full_user_by_phone($phone));
-			_log_info($sid, "answer: $answer");
-
-			$api->sendMessage({chat_id => $chat_id, text => $answer});
 		} else {
-			if (not exists $machines{$chat_id}) {
-				$machines{$chat_id} = new_fsm($user, $chat_id);
+			if (defined $update->{message}{text}
+					and substr($update->{message}{text}, 0, 1) eq "%") {
+				# temporary mode for restgram testing
+				_log_info($sid, "restgram testing");
 
-				_log_info($sid, "finite state machine created");
+				my $phone = substr($update->{message}{text}, 1);
+				my $answer = encode_json($restgram->get_full_user_by_phone($phone));
+				_log_info($sid, "answer: $answer");
+
+				$api->sendMessage({chat_id => $chat_id, text => $answer});
+
+			} else {
+				if (not exists $machines{$chat_id}) {
+					$machines{$chat_id} = new_fsm($user, $chat_id);
+					_log_info($sid, "finite state machine created");
+				}
+				$machines{$chat_id}->next($update->{message});
+				_log_info($sid, "moved to next state");
 			}
-			$machines{$chat_id}->next($update->{message});
-			_log_info($sid, "moved to next state");
 		}
 
 		_log_info($sid, "message processing finished");
