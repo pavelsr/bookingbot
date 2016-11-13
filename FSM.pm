@@ -73,14 +73,16 @@ sub new {
 			DATETIME => {
 				do => sub {
 					my $state = shift;
+
 					my $machine = $state->machine;
 					my $resource = $machine->last_result("RESOURCE");
 					my $duration = $machine->last_result("DURATION");
+
 					$callbacks{send_datetime_selector}($resource, $duration);
 				},
 				rules => [
 					CANCEL => \&_cancel,
-					BOOK => sub {
+					INSTRUCTOR => sub {
 						my ($state, %message) = @_;
 						_parse_value($state,
 							$callbacks{parse_datetime}, $message{text});
@@ -97,6 +99,32 @@ sub new {
 				rules => [DATETIME => 1],
 			},
 
+			INSTRUCTOR => {
+				do => sub { shift->message("transition"); },
+				rules => [
+					BOOK => sub {
+						my ($state, %message) = @_;
+
+						my $machine = $state->machine;
+						my $resource = $machine->last_result("RESOURCE");
+						my $datetime = $machine->last_result("DATETIME");
+						my $duration = $machine->last_result("DURATION");
+
+						_parse_value($state, $callbacks{parse_instructor},
+							$resource, $datetime, $duration);
+					},
+					INSTRUCTOR_INVALID => 1
+				],
+			},
+
+			INSTRUCTOR_INVALID => {
+				do => sub {
+					shift->message("transition");
+					$callbacks{send_instructor_invalid}();
+				},
+				rules => [DATETIME => 1],
+			},
+
 			BOOK => {
 				do => sub {
 					my $state = shift;
@@ -106,8 +134,10 @@ sub new {
 					my $resource = $machine->last_result("RESOURCE");
 					my $datetime = $machine->last_result("DATETIME");
 					my $duration = $machine->last_result("DURATION");
+					my $instructor = $machine->last_result("INSTRUCTOR");
 
-					$callbacks{book}($resource, $datetime, $duration);
+					$callbacks{book}(
+						$resource, $datetime, $duration, $instructor);
 				},
 				rules => [BEGIN => 1],
 			},
@@ -139,9 +169,9 @@ sub _cancel {
 }
 
 sub _parse_value {
-	my ($state, $parser, $data) = @_;
+	my ($state, $parser, @data) = @_;
 
-	my $parsed = $parser->($data);
+	my $parsed = $parser->(@data);
 	if (defined $parsed) {
 		$state->result($parsed);
 	}

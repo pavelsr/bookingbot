@@ -25,9 +25,22 @@ sub vacancies {
 	my $freeset = $dtf->spanset(\@free);
 	my $busyset = $dtf->spanset(\@busy);
 
-	my @result = $freeset->complement($busyset)->grep(sub {
-		$dtf->durcmp($duration, $_->duration, $_->start) <= 0;
-	})->as_list;
+	sub _enclosing_event {
+		my ($events, $span) = @_;
+
+		my @result = grep {
+			$_->{transparent} and $_->{span}->contains($span);
+		} @$events;
+
+		scalar @result ? $result[0] : undef;
+	}
+
+	my @result = map {{
+			span => $_,
+			instructor => _enclosing_event($events, $_)->{summary}
+		}}
+		grep { $dtf->durcmp($duration, $_->duration, $_->start) <= 0 }
+		$freeset->complement($busyset)->as_list;
 
 	\@result;
 }

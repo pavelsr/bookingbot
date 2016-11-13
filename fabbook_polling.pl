@@ -16,6 +16,7 @@ use Serikoff::Telegram::Restgram;
 use DateTimeFactory;
 use FSM;
 use Google;
+use Instructors;
 use Localization qw(lz dt);
 use Resources;
 
@@ -30,6 +31,7 @@ my $jsonconfig = plugin "JSONConfig";
 my $restgram = Serikoff::Telegram::Restgram->new();
 my $dtf = DateTimeFactory->new($jsonconfig->{timezone});
 my $resources = Resources->new($jsonconfig->{resources});
+my $instructors = Instructors->new($api, $jsonconfig->{instructors});
 
 my $polling_interval = 1;
 
@@ -115,7 +117,7 @@ sub new_fsm {
 			my ($resource, $duration) = @_;
 
 			my $vacancies = $resources->vacancies($resource, $duration);
-			my @keyboard = map { dt($_->start) } @$vacancies;
+			my @keyboard = map { dt($_->{span}->start) } @$vacancies;
 
 			$api->sendMessage({
 				chat_id => $chat_id,
@@ -125,15 +127,9 @@ sub new_fsm {
 		},
 
 		parse_datetime => sub {
-			my ($arg) = @_;
-			my $unixtime = str2time($arg);
-			if (defined $unixtime) {
-				my $result = $dtf->epoch($unixtime);
-
-				$result;
-			} else {
-				undef;
-			}
+			my ($inputstr) = @_;
+			my $unixtime = str2time($inputstr);
+			defined $unixtime ? $dtf->epoch($unixtime) : undef;
 		},
 
 		send_datetime_invalid => sub {
@@ -141,16 +137,37 @@ sub new_fsm {
 					chat_id => $chat_id, text => lz("invalid_datetime")});
 		},
 
-		book => sub {
-			my ($name, $datetime, $duration) = @_;
+		parse_instructor => sub {
+			my ($resource, $datetime, $duration) = @_;
 
-			$resources->book($user_id, $name,
+			my $span = $dtf->span_d($datetime, $duration);
+			my $vacancies = $resources->vacancies($resource, $duration);
+
+			my @result = map { $_->{instructor} }
+				grep { $_->{span}->contains($span) } @$vacancies;
+
+			scalar @result ? $result[0] : undef;
+		},
+
+		send_instructor_invalid => sub {
+			$api->sendMessage({
+					chat_id => $chat_id, text => lz("instructor_not_found")});
+		},
+
+		book => sub {
+			my ($resource, $datetime, $duration, $instructor) = @_;
+
+			$resources->book($user_id, $resource,
 				$dtf->span_d($datetime, $duration));
 
-			my $datestr = dt($datetime);
 			$api->sendMessage({
 					chat_id => $chat_id,
-					text => lz("booked", $name, $datestr)});
+					text => lz("booked", $resource, dt($datetime))});
+			$api->sendMessage({
+					chat_id => $chat_id,
+					text => lz("instructor_contact")});
+
+			$instructors->share_contact($instructor, $chat_id);
 		},
 	);
 }
