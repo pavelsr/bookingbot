@@ -27,17 +27,16 @@ sub share_contact {
 sub notify_new_book {
 	my ($self, $id, $user, $resource, $span) = @_;
 
-	$self->{api}->sendMessage({
-		chat_id => $id,
+	$self->{api}->sendMessage({chat_id => $id,
 		text => lz("instructor_new_book", $resource,
 			dt($span->start), dt($span->end))
 	});
 	$self->{contacts}->send($id, $user->{id});
 
 	foreach my $group (@{$self->{groups}->{groups}}) {
-		$self->{api}->sendMessage({
-			chat_id => $group,
-			text => lz("group_new_book", $self->{instructors}->{$id}->name,
+		$self->{api}->sendMessage({chat_id => $group,
+			text => lz("group_new_book",
+				$self->{instructors}->{$id}->name . " ($id)",
 				$resource, dt($span->start), dt($span->end))
 		});
 		$self->{contacts}->send($group, $user->{id});

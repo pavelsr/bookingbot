@@ -11,6 +11,7 @@ my %strings = (
 		"na"                        => "N/A",
 
 		"datetime_format"           => "%%d %%b %%H:%%M",
+		"contact_format"            => "▶ %s %s\n📞 %s",
 
 		"30_min"                    => "30 minutes",
 		"1_hour"                    => "1 hour",
