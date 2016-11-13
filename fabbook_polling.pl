@@ -74,11 +74,23 @@ sub new_fsm {
 		},
 
 		send_resources => sub {
-			$api->sendMessage({
-				chat_id => $chat_id,
-				text => lz("select_resource"),
-				reply_markup => create_one_time_keyboard($resources->names, 1)
-			});
+			my @durations = sort { $a <=> $b }
+				values %{$jsonconfig->{durations}};
+			my $min = $dtf->dur(minutes => shift @durations);
+
+			my @keyboard = grep {
+				scalar @{$resources->vacancies($_, $min)} > 0;
+			} @{$resources->names};
+
+			if (scalar @keyboard > 0) {
+				$api->sendMessage({
+					chat_id => $chat_id,
+					text => lz("select_resource"),
+					reply_markup => create_one_time_keyboard(\@keyboard, 1)
+				});
+			} else {
+				undef;
+			}
 		},
 
 		parse_resource => sub {
@@ -86,24 +98,40 @@ sub new_fsm {
 			$resources->exists($name) ? $name : undef;
 		},
 
+		send_resource_not_found => sub {
+			$api->sendMessage({
+				chat_id => $chat_id, text => lz("resource_not_found")});
+		},
+
 		send_resource_failed => sub {
 			$api->sendMessage({
-					chat_id => $chat_id, text => lz("invalid_resource")});
+				chat_id => $chat_id, text => lz("invalid_resource")});
 		},
 
 		send_durations => sub {
+			my ($resource) = @_;
+
 			my $durations = $jsonconfig->{durations};
 
 			my @keyboard =
 				map { lz($_->[1]) }
 				sort { $a->[0] <=> $b->[0] }
-				map { [$durations->{$_}, $_] } keys %$durations;
+				map { [$durations->{$_}, $_] }
+				grep {
+					my $duration = $dtf->dur(minutes => $durations->{$_});
+					my $vacancies = $resources->vacancies($resource, $duration);
+					scalar @$vacancies > 0;
+				} keys %$durations;
 
-			$api->sendMessage({
-				chat_id => $chat_id,
-				text => lz("select_duration"),
-				reply_markup => create_one_time_keyboard(\@keyboard, 1)
-			});
+			if (scalar @keyboard > 0) {
+				$api->sendMessage({
+					chat_id => $chat_id,
+					text => lz("select_duration"),
+					REPLY_MARKUP => create_one_time_keyboard(\@keyboard, 1)
+				});
+			} else {
+				undef;
+			}
 		},
 
 		parse_duration => sub {
@@ -115,9 +143,14 @@ sub new_fsm {
 				: undef;
 		},
 
+		send_duration_not_found => sub {
+			$api->sendMessage({
+				chat_id => $chat_id, text => lz("duration_not_found")});
+		},
+
 		send_duration_failed => sub {
 			$api->sendMessage({
-					chat_id => $chat_id, text => lz("invalid_duration")});
+				chat_id => $chat_id, text => lz("invalid_duration")});
 		},
 
 		send_datetime_selector => sub {
@@ -141,7 +174,7 @@ sub new_fsm {
 
 		send_datetime_failed => sub {
 			$api->sendMessage({
-					chat_id => $chat_id, text => lz("invalid_datetime")});
+				chat_id => $chat_id, text => lz("invalid_datetime")});
 		},
 
 		parse_instructor => sub {
@@ -158,7 +191,7 @@ sub new_fsm {
 
 		send_instructor_failed => sub {
 			$api->sendMessage({
-					chat_id => $chat_id, text => lz("instructor_not_found")});
+				chat_id => $chat_id, text => lz("instructor_not_found")});
 		},
 
 		book => sub {
@@ -168,11 +201,19 @@ sub new_fsm {
 			$resources->book($user->{id}, $resource, $span);
 
 			$api->sendMessage({
-					chat_id => $chat_id,
-					text => lz("booked", $resource, dt($datetime))});
+				chat_id => $chat_id,
+				text => lz("booked", $resource, dt($datetime))});
 			$instructors->share_contact($instructor, $chat_id);
 
 			$instructors->notify_new_book($instructor, $user, $resource, $span);
+		},
+
+		send_refresh => sub {
+			$api->sendMessage({
+				chat_id => $chat_id,
+				text => lz("press_refresh_button"),
+				reply_markup => create_one_time_keyboard([lz("refresh")], 1)
+			});
 		},
 	);
 }

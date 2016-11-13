@@ -56,10 +56,21 @@ sub new {
 			},
 
 			RESOURCE => {
-				do => sub { $callbacks{send_resources}(); },
+				do => sub {
+					my ($state) = @_;
+					if (not defined $callbacks{send_resources}()) {
+						$state->message("transition");
+						$state->result(undef);
+					}
+				},
 				rules => [
 					BEGIN => \&_start,
 					CANCEL => \&_cancel,
+
+					RESOURCE_NOT_FOUND => sub {
+						my ($state) = @_;
+						not defined $state->result;
+					},
 
 					DURATION => sub {
 						my ($state, $update) = @_;
@@ -73,6 +84,15 @@ sub new {
 				],
 			},
 
+			RESOURCE_NOT_FOUND => {
+				do => sub {
+					my ($state) = @_;
+					$state->message("transition");
+					$callbacks{send_resource_not_found}();
+				},
+				rules => [REFRESH => 1],
+			},
+
 			RESOURCE_FAILED => {
 				do => sub {
 					my ($state) = @_;
@@ -84,11 +104,24 @@ sub new {
 
 			DURATION => {
 				do => sub {
-					$callbacks{send_durations}();
+					my ($state) = @_;
+
+					my $machine = $state->machine;
+					my $resource = $machine->last_result("RESOURCE");
+
+					if (not defined $callbacks{send_durations}($resource)) {
+						$state->message("transition");
+						$state->result(undef);
+					}
 				},
 				rules => [
 					BEGIN => \&_start,
 					CANCEL => \&_cancel,
+
+					DURATION_NOT_FOUND => sub {
+						my ($state) = @_;
+						not defined $state->result;
+					},
 
 					DATETIME => sub {
 						my ($state, $update) = @_;
@@ -98,8 +131,18 @@ sub new {
 								$callbacks{parse_duration}, $text);
 						});
 					},
+
 					DURATION_FAILED => 1
 				],
+			},
+
+			DURATION_NOT_FOUND => {
+				do => sub {
+					my ($state) = @_;
+					$state->message("transition");
+					$callbacks{send_duration_not_found}();
+				},
+				rules => [REFRESH => 1],
 			},
 
 			DURATION_FAILED => {
@@ -193,7 +236,15 @@ sub new {
 			CANCEL => {
 				do => sub { shift->message("transition"); },
 				rules => [BEGIN => 1],
-			}
+			},
+
+			REFRESH => {
+				do => sub {
+					my ($state) = @_;
+					$callbacks{send_refresh}();
+				},
+				rules => [BEGIN => 1],
+			},
 		)
 	};
 
