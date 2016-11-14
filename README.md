@@ -24,7 +24,7 @@ Configuration file named `bot.json` and has following structure (comments separa
 
 	"resources": {
 		"CTC 3D printer": {                # Human-readable name of resource.
-			"calendar": "primary"          # Resource calendar id ("primary" for primary account calendar).
+			"calendar": "primary"          # Resource's calendar id ("primary" for primary account calendar).
 		},
 	},
 
