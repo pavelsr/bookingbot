@@ -61,7 +61,7 @@ Configuration file named `bot.json` and has following structure (comments separa
 
 5. The bot will notify registered instructors when someone book resources in their schedule, so instructors has to open chat with bot and send `/start` command to it (Telegram bot can't start new chat on their own).
 
-6. You could add bot to any Telegram group and it will post information about every book he received. This could be useful for common instructors group.
+6. You could add the bot to any Telegram group and it will post information about every book he received. This could be useful for common instructors group.
 
 ## Known issues
 
