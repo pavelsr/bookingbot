@@ -10,41 +10,46 @@ sub new {
 	my ($class, $api, $contacts, $groups, $config) = @_;
 
 	my %instructors = ();
-	foreach my $id (keys %$config) {
-		my $record = $config->{$id};
-		$instructors{$id} = Instructor->new($api, $record);
+	foreach my $name (keys %$config) {
+		my $record = $config->{$name};
+		$instructors{$name} = Instructor->new($api, $record);
 	}
 
-	my $self = {api => $api, contacts => $contacts, groups => $groups, instructors => \%instructors};
+	my $self = {api => $api, contacts => $contacts, groups => $groups,
+		instructors => \%instructors};
 	bless $self, $class;
 }
 
 sub exists {
-	my ($self, $id) = @_;
-	defined $self->{instructors}->{$id};
+	my ($self, $name) = @_;
+	defined $self->{instructors}->{$name};
 }
 
 sub share_contact {
-	my ($self, $id, $chat_id) = @_;
-	$self->{instructors}->{$id}->share_contact($chat_id);
+	my ($self, $name, $chat_id) = @_;
+	die unless $self->exists($name);
+
+	$self->{instructors}->{$name}->share_contact($chat_id);
 }
 
 sub notify_instructor {
-	my ($self, $id, $user, $resource, $span) = @_;
+	my ($self, $name, $user, $resource, $span) = @_;
+	die unless $self->exists($name);
 
-	$self->{api}->sendMessage({chat_id => $id,
+	my $instructor = $self->{instructors}->{$name};
+	$self->{api}->sendMessage({chat_id => $instructor->{id},
 		text => lz("instructor_new_book", $resource,
 			dt($span->start), dt($span->end))
 	});
-	$self->{contacts}->send($id, $user->{id});
+	$self->{contacts}->send($instructor->{id}, $user->{id});
 }
 
 sub notify_groups {
-	my ($self, $id, $user, $resource, $span) = @_;
+	my ($self, $name, $user, $resource, $span) = @_;
 
-	my $text = $self->exists($id)
+	my $text = $self->exists($name)
 		? lz("group_new_book",
-				$self->{instructors}->{$id}->name . " ($id)",
+				$self->{instructors}->{$name}->fullname, $name,
 				$resource, dt($span->start), dt($span->end)) 
 		: lz("group_new_book_fallback",
 				$resource, dt($span->start), dt($span->end));
