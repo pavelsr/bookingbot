@@ -32,6 +32,7 @@ my %strings = (
 		"invalid_datetime"          => "This is not information I need. Try again",
 		"instructor_not_found"      => "I can't found an instructor for you (looks like this time has been booked already). Please, select another time",
 		"booked"                    => "OK, done. I have booked %s for you at %s",
+		"booked_by"                 => "Booked by %s",
 		"instructor_contact"        => "Here is your instructor contact:",
 
 		"press_refresh_button"      => "Press the button to refresh data",
@@ -64,6 +65,7 @@ my %strings = (
 		"invalid_datetime"          => "Это не то, что мне нужно. Попробуй ещё раз",
 		"instructor_not_found"      => "Я не смог найти инструктора для тебя (возможно, выбранное тобой время уже заняли). Выбери другое время, пожалуйста",
 		"booked"                    => "Отлично, я забронировал для тебя %s на дату %s",
+		"booked_by"                 => "Забронировал %s",
 		"instructor_contact"        => "Вот контакт твоего инструктора:",
 
 		"press_refresh_button"      => "Нажми кнопку чтобы обновить информацию",

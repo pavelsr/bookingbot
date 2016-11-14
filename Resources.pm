@@ -37,8 +37,8 @@ sub vacancies {
 }
 
 sub book {
-	my ($self, $user_id, $name, $span) = @_;
-	$self->{resources}->{$name}->book($user_id, $span);
+	my ($self, $summary, $name, $span) = @_;
+	$self->{resources}->{$name}->book($summary, $span);
 }
 
 1;

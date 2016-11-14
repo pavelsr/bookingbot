@@ -46,8 +46,8 @@ sub vacancies {
 }
 
 sub book {
-	my ($self, $user_id, $span) = @_;
-	Google::CalendarAPI::Events::insert($self->{calendar}, $user_id, $span);
+	my ($self, $summary, $span) = @_;
+	Google::CalendarAPI::Events::insert($self->{calendar}, $summary, $span);
 }
 
 1;

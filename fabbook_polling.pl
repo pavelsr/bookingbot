@@ -196,7 +196,8 @@ sub new_fsm {
 			my ($resource, $datetime, $duration, $instructor) = @_;
 
 			my $span = $dtf->span_d($datetime, $duration);
-			$resources->book($user->{id}, $resource, $span);
+			$resources->book(lz("booked_by", $contacts->fullname($user->{id})),
+				$resource, $span);
 
 			$api->sendMessage({
 				chat_id => $chat_id,
