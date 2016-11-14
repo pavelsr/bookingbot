@@ -11,4 +11,4 @@ RUN cpanm --installdeps . \
 
 COPY . .
 
-ENTRYPOINT ["morbo", "-w", "fabbook_polling.conf", "fabbook_polling.pl"]
+ENTRYPOINT ["morbo", "-w", "bot.json", "bot.pl"]

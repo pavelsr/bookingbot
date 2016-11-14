@@ -5,5 +5,5 @@ if [ $# -eq 0 ]
     echo "No arguments supplied. Usage ./runmorbo.sh <port>"
   else
 	echo $1
-	morbo -l "http://*:$1" -w /home/pavel/projects/serikoff.lib -w fabbook_polling.conf fabbook_polling.pl
+	morbo -l "http://*:$1" -w bot.json bot.pl
 fi
