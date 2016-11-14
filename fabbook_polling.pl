@@ -206,8 +206,10 @@ sub new_fsm {
 
 			if ($instructors->exists($instructor)) {
 				$instructors->share_contact($instructor, $chat_id);
-				$instructors->notify_new_book($instructor, $user, $resource, $span);
+				$instructors->notify_instructor(
+					$instructor, $user, $resource, $span);
 			}
+			$instructors->notify_groups($instructor, $user, $resource, $span);
 		},
 
 		send_refresh => sub {
