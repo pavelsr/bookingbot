@@ -1,26 +1,22 @@
-Telegram bot that helps FabLab to create a schedule
+# FabLab Booking Bot
 
-GUI from web browser - http://booking.fablab61.ru/
+## Build and run
 
-[Developers guide](https://bitbucket.org/serikov/fab_booking_bot/wiki/Developers%20Guide)
-
-# Build and run
-
-## Requirements
+### Requirements
 
 1. Docker 1.6.2 or above.
 1. Google Authenticate file. Check [this instruction](https://bitbucket.org/serikov/google-apis-perl) to create it.
 
-## Steps
+### Steps
 
 1. Clone the repository.
 1. Put Google Authenticate file into repo dir. Rename it to `gapi.conf`.
 1. Open `bot.pl` in text editor and replace Telegram token with yours.
 1. Run `docker_build_and_run.sh` (you have to be `root` or member of `docker` group). It will take some time to download Docker images and Perl modules.
 
-# Configuration
+## Configuration
 
-Configuration file named `bot.json` and has following structure (comments separated with '#'):
+Configuration file named `bot.json` and has following structure (comments separated with `#`):
 
 ```
 {
@@ -49,3 +45,28 @@ Configuration file named `bot.json` and has following structure (comments separa
 	}
 }
 ```
+
+## Usage
+
+1. Register your instructors in `bot.json`.
+2. Let instructors add their schedule to resources' calendars. Here is some rules they have to follow:
+
+    - instructors must use their human-readable id (see *Configuration* section) as summary for their events;
+    - instructors' schedules for particular resource should not intersect each other;
+    - instructors' events must be marked as AVAILABLE. *BUSY events will be treated as booked and its time will be removed from resources schedule!*
+
+3. When instructors' schedule added to the calendars you could start the bot.
+
+4. Right after `/start` command the bot will request to share your contact - this is required to book resources, so open menu in right up corner and select `Share my contact`. You are available to book resources now.
+
+5. The bot will notify registered instructors when someone book resources in their schedule, so instructors has to open chat with bot and send `/start` command to it (Telegram bot can't start new chat on their own).
+
+6. You could add bot to any Telegram group and it will post information about every book he received. This could be useful for common instructors group.
+
+## Known issues
+
+If you have found any issue or have feature request - create BitBucket issue for it, please. Thanks.
+
+## Developer guide
+
+[Here](https://bitbucket.org/serikov/fab_booking_bot/wiki/Developers%20Guide).
