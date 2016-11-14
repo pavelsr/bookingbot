@@ -3,7 +3,6 @@
 package BookingBot;
 
 use common::sense;
-use Date::Parse qw(str2time);
 use JSON qw(encode_json);
 use Mojolicious::Lite;
 use WWW::Telegram::BotAPI;
@@ -168,8 +167,7 @@ sub new_fsm {
 
 		parse_datetime => sub {
 			my ($inputstr) = @_;
-			my $unixtime = str2time($inputstr);
-			defined $unixtime ? $dtf->epoch($unixtime) : undef;
+			$dtf->parse($inputstr);
 		},
 
 		send_datetime_failed => sub {

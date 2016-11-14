@@ -3,6 +3,7 @@ package DateTimeFactory;
 use strict;
 use warnings;
 
+use Date::Parse qw(str2time);
 use DateTime;
 use DateTime::Duration;
 use DateTime::Format::RFC3339;
@@ -15,6 +16,13 @@ sub new {
 	my ($class, $timezone) = @_;
 	my $self = {timezone => $timezone};
 	bless $self, $class;
+}
+
+sub now {
+	my ($self) = @_;
+	die unless defined $self->{timezone};
+
+	DateTime->now(time_zone => $self->{timezone});
 }
 
 sub tomorrow {
@@ -33,6 +41,25 @@ sub epoch {
 	$result->set_time_zone($self->{timezone});
 
 	$result;
+}
+
+sub cmp {
+	my ($self, $left, $right) = @_;
+	DateTime->compare($left, $right);
+}
+
+sub parse {
+	my ($self, $inputstr) = @_;
+	my $unixtime = str2time($inputstr);
+	defined $unixtime ? $self->epoch($unixtime) : undef;
+}
+
+sub parse_rfc3339 {
+	my ($self, $inputstr) = @_;
+	die unless defined $self->{timezone};
+
+	my $result = DateTime::Format::RFC3339->parse_datetime($inputstr);
+	$result->set_time_zone($self->{timezone});
 }
 
 sub dur {
@@ -55,6 +82,11 @@ sub span_d {
 	my $duration = blessed($data) ? $data : $self->dur(%$data);
 	DateTime::Span->from_datetime_and_duration(
 		start => $datetime, duration => $duration);
+}
+
+sub span_se {
+	my ($self, $start, $end) = @_;
+	DateTime::Span->from_datetimes(start => $start, before => $end);
 }
 
 sub spanset {

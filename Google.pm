@@ -21,44 +21,35 @@ sub auth {
 	$dtf = DateTimeFactory->new($timezone);
 }
 
+my $_expire;
+sub _refresh_token {
+	my $now = $dtf->now;
+	if (not defined $_expire or $dtf->cmp($_expire, $now) <= 0) {
+		$api->refresh_access_token_silent($user);
+		$_expire = $now->clone->add(minutes => 45);
+	}
+}
 
 package Google::CalendarAPI::Events;
 
 use strict;
 use warnings;
 
-
 sub list {
 	my ($calendar, $span) = @_;
 	$span = $span // $dtf->span_d($dtf->tomorrow, {days => 7});
 
-	my $start = $span->start;
+	Google::CalendarAPI::_refresh_token;
 
-	my @result = ();
-	while (1) {
-		my $transparentspan = $dtf->span_d($start->clone, {hours => 4});
-
-		if (not $span->contains($transparentspan)) {
-			last;
-		}
-
-		my %transparentevent = (
-			summary => "251352487",
-			transparent => 1,
-			span => $transparentspan,
-		);
-		push @result, \%transparentevent;
-
-		my $opacityspan = $dtf->span_d(
-			$start->clone->add(minutes => 30), {minutes => 90});
-		my %opacityevent = (
-			summary => "251352487",
-			span => $opacityspan,
-		);
-		push @result, \%opacityevent;
-
-		$start->add(hours => 6);
-	}
+	my @result = grep {
+		defined $_->{summary} and $span->contains($_->{span});
+	} map {{
+		summary => $_->{summary},
+		transparent => ($_->{transparency} // "") eq "transparent",
+		span => $dtf->span_se(
+			$dtf->parse_rfc3339($_->{start}->{dateTime}),
+			$dtf->parse_rfc3339($_->{end}->{dateTime})),
+	}} @{$api->events_list({calendarId => $calendar, user => $user})};
 
 	\@result;
 }
@@ -66,13 +57,14 @@ sub list {
 sub insert {
 	my ($calendar, $summary, $span) = @_;
 
+	Google::CalendarAPI::_refresh_token;
+
 	my $event = {};
 	$event->{summary} = $summary;
 
 	$event->{start}{dateTime} = $dtf->rfc3339($span->start);
 	$event->{end}{dateTime} = $dtf->rfc3339($span->end);
 
-	$api->refresh_access_token_silent($user);
 	$api->add_event($user, $calendar, $event);
 }
 
