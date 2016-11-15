@@ -28,6 +28,8 @@ my $api = WWW::Telegram::BotAPI->new(
 	token => "222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po"
 );
 
+Localization::set_language($jsonconfig->{language});
+
 my $contacts = Contacts->new($api);
 my $dtf = DateTimeFactory->new($jsonconfig->{timezone});
 my $groups = Groups->new($api->getMe->{result}->{id});

@@ -89,7 +89,8 @@ sub set_language {
 	my ($new_language) = @_;
 
 	my $languages_ = languages;
-	my $result = grep { $_ eq $new_language } @$languages_;
+	my $result = defined $new_language and
+		grep { $_ eq $new_language } @$languages_;
 	if ($result) {
 		$language = $new_language;
 	}
