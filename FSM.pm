@@ -23,9 +23,6 @@ sub new {
 			CONTACT => {
 				do => sub { $callbacks{send_contact_message}(); },
 				rules => [
-					START => \&_start,
-					START => \&_cancel,
-
 					BEGIN => sub {
 						my ($state, $update) = @_;
 						my $contact = $update->{message}->{contact};
@@ -33,6 +30,10 @@ sub new {
 							$callbacks{save_contact}($contact);
 						}
 					},
+
+					START => \&_start,
+					START => \&_cancel,
+
 					CONTACT_FAILED => 1
 				],
 			},
@@ -66,9 +67,6 @@ sub new {
 					}
 				},
 				rules => [
-					BEGIN => \&_start,
-					CANCEL => \&_cancel,
-
 					RESOURCE_NOT_FOUND => sub {
 						my ($state) = @_;
 						not defined $state->result;
@@ -82,6 +80,10 @@ sub new {
 								$callbacks{parse_resource}, $text);
 						});
 					},
+
+					BEGIN => \&_start,
+					CANCEL => \&_cancel,
+
 					RESOURCE_FAILED => 1
 				],
 			},
@@ -119,9 +121,6 @@ sub new {
 					}
 				},
 				rules => [
-					BEGIN => \&_start,
-					CANCEL => \&_cancel,
-
 					DURATION_NOT_FOUND => sub {
 						my ($state) = @_;
 						not defined $state->result;
@@ -135,6 +134,9 @@ sub new {
 								$callbacks{parse_duration}, $text);
 						});
 					},
+
+					BEGIN => \&_start,
+					CANCEL => \&_cancel,
 
 					DURATION_FAILED => 1
 				],
@@ -169,9 +171,6 @@ sub new {
 					$callbacks{send_datetime_selector}($resource, $duration);
 				},
 				rules => [
-					BEGIN => \&_start,
-					CANCEL => \&_cancel,
-
 					INSTRUCTOR => sub {
 						my ($state, $update) = @_;
 						_with_text($update, sub {
@@ -180,6 +179,10 @@ sub new {
 								$callbacks{parse_datetime}, $text);
 						});
 					},
+
+					BEGIN => \&_start,
+					CANCEL => \&_cancel,
+
 					DATETIME_FAILED => 1
 				],
 			},
