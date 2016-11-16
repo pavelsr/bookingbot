@@ -7,7 +7,7 @@ WORKDIR /usr/src/bookingbot
 COPY cpanfile ./
 
 RUN cpanm --installdeps . \
-	&& git clone https://denis-it@bitbucket.org/serikov/serikoff.lib.git
+	&& git clone https://bitbucket.org/serikov/serikoff.lib.git
 
 COPY . .
 
