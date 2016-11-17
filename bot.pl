@@ -3,7 +3,6 @@
 package BookingBot;
 
 use common::sense;
-use JSON qw(encode_json);
 use Mojolicious::Lite;
 use WWW::Telegram::BotAPI;
 
@@ -19,7 +18,10 @@ use Google;
 use Groups;
 use Instructors;
 use Localization qw(lz dt);
+use Log;
 use Resources;
+
+$| = 1; # disable buffering
 
 my $jsonconfig = plugin "JSONConfig";
 
@@ -33,17 +35,12 @@ Localization::set_language($jsonconfig->{language});
 my $contacts = Contacts->new($api);
 my $dtf = DateTimeFactory->new($jsonconfig->{timezone});
 my $groups = Groups->new($api->getMe->{result}->{id});
-my $instructors = Instructors->new($api, $contacts, $groups, $jsonconfig->{instructors});
+my $instructors = Instructors->new(
+	$api, $contacts, $groups, $jsonconfig->{instructors});
 my $resources = Resources->new($jsonconfig->{resources});
 my $restgram = Serikoff::Telegram::Restgram->new();
+my $log = Log->new();
 my %machines = ();
-
-# sid - session id, used in logs to distinguish one session from another
-my $sid = 0;
-sub _log_info {
-	my ($session_id, $message) = @_;
-	app->log->info("[$session_id] " . $message);
-}
 
 sub new_fsm {
 	my ($user, $chat_id) = @_;
@@ -228,53 +225,53 @@ Google::CalendarAPI::auth(
 	"gapi.conf", "fablab61ru\@gmail.com", $jsonconfig->{timezone});
 
 
-_log_info($sid, "ready to process incoming messages");
+$log->infof("ready to process incoming messages");
 
 
 my $polling_interval = 1;
 Mojo::IOLoop->recurring($polling_interval => sub {
 	my $hash = get_last_messages($api);
 	while (my ($chat_id, $update) = each(%$hash)) {
-		$sid++;
+		Log::incsid;
 
 		if (not defined $update
 				or not defined $update->{message}
 				or not defined $update->{message}->{from}) {
-			_log_info($sid, "unknown update - ignored");
+			$log->infof("unknown update - ignored");
 		} elsif ($chat_id ne $update->{message}->{from}->{id}) {
 			if (defined $update->{message}->{new_chat_participant}
 					or defined $update->{message}->{left_chat_participant}) {
 				$groups->process($update->{message});
-				_log_info($sid, "group message processed");
+				$log->infof("group message processed");
 			} else {
-				_log_info($sid, "non-private message ignored");
+				$log->infof("non-private message ignored");
 			}
 		} else {
 			my $user = $update->{message}->{from};
-			_log_info($sid, "new message: " . encode_json($update->{message}));
+			$log->infof("new message: %s", $update->{message});
 
 			if (defined $update->{message}{text}
 					and substr($update->{message}{text}, 0, 1) eq "%") {
 				# temporary mode for restgram testing
-				_log_info($sid, "restgram testing");
+				$log->infof("restgram testing mode");
 
 				my $phone = substr($update->{message}{text}, 1);
-				my $answer = encode_json($restgram->get_full_user_by_phone($phone));
-				_log_info($sid, "answer: $answer");
+				my $answer = $restgram->get_full_user_by_phone($phone);
+				$log->infof("answer: %s", $answer);
 
 				$api->sendMessage({chat_id => $chat_id, text => $answer});
 
 			} else {
 				if (not exists $machines{$chat_id}) {
 					$machines{$chat_id} = new_fsm($user, $chat_id);
-					_log_info($sid, "finite state machine created");
+					$log->infof("finite state machine created");
 				}
 				$machines{$chat_id}->next($update);
-				_log_info($sid, "moved to next state");
+				$log->infof("moved to next state");
 			}
 		}
 
-		_log_info($sid, "message processing finished");
+		$log->infof("message processing finished");
 	}
 });
 
