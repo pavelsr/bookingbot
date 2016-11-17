@@ -66,8 +66,4 @@ Configuration file named `bot.json` and has following structure (comments separa
 
 ## Known issues
 
-If you have found any issue or have feature request - create BitBucket issue for it, please. Thanks.
-
-## Developer guide
-
-[Here](https://bitbucket.org/serikov/fab_booking_bot/wiki/Developers%20Guide).
+If you have found any issue or have feature request - create an issue for it, please. Thanks.
