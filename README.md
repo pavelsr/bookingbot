@@ -20,6 +20,8 @@ Configuration file named `bot.json` and has following structure (comments separa
 
 ```
 {
+	"token": "<...>",                      # Telegram Bot API token.
+
 	"language": "Russian",                 # Optional. Bot default language (supported values: English, Russian). English used if omitted.
 	"timezone": "Europe/Moscow",           # Bot time zone.
 
