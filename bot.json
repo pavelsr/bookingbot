@@ -1,25 +1,13 @@
 {
+
+	"token": "<TELEGRAM_BOT_API_TOKEN>",
+
+	"language": "Russian",
 	"timezone": "Europe/Moscow",
 
 	"resources": {
-		"CTC 3D printer": {
-			"calendar": "primary"
-		},
-
-		"Reprap 3D printer": {
-			"calendar": "primary"
-		},
-
 		"Lasersaur": {
-			"calendar": "b7qv527m99oqlq3md28cof16jc@group.calendar.google.com"
-		},
-
-		"Shapeoko": {
-			"calendar": "201re7djrdeeato14m23e600mo@group.calendar.google.com"
-		},
-
-		"Silhouette": {
-			"calendar": "primary"
+			"calendar": "<GOOGLE_CALENDAR_ID>"
 		}
 	},
 

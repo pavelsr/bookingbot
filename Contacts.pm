@@ -36,13 +36,10 @@ sub send {
 	my $contact = $self->{contacts}->{$user_id};
 	if (defined $contact) {
 		try {
-			$self->{api}->sendContact({chat_id => $chat_id,
-				phone_number => $contact->{phone_number},
-				first_name => $contact->{first_name},
-				last_name => $contact->{last_name},
-			});
+			$self->{api}->send_contact({chat_id => $chat_id,
+					contact => $contact});
 		} catch {
-			$self->{api}->sendMessage({chat_id => $chat_id,
+			$self->{api}->send_message({chat_id => $chat_id,
 				text => lz("contact_format",
 				$contact->{first_name}, $contact->{last_name} // "",
 				$contact->{phone_number})});

@@ -37,7 +37,7 @@ sub notify_instructor {
 	die unless $self->exists($name);
 
 	my $instructor = $self->{instructors}->{$name};
-	$self->{api}->sendMessage({chat_id => $instructor->{id},
+	$self->{api}->send_message({chat_id => $instructor->{id},
 		text => lz("instructor_new_book", $resource,
 			dt($span->start), dt($span->end))
 	});
@@ -55,7 +55,7 @@ sub notify_groups {
 				$resource, dt($span->start), dt($span->end));
 
 	foreach my $group (@{$self->{groups}->{groups}}) {
-		$self->{api}->sendMessage({chat_id => $group, text => $text});
+		$self->{api}->send_message({chat_id => $group, text => $text});
 		$self->{contacts}->send($group, $user->{id});
 	}
 }

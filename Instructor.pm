@@ -25,17 +25,17 @@ sub fullname {
 sub share_contact {
 	my ($self, $chat_id) = @_;
 
-	$self->{api}->sendMessage({chat_id => $chat_id,
+	$self->{api}->send_message({chat_id => $chat_id,
 		text => lz("instructor_contact")});
 
 	try {
-		$self->{api}->sendContact({chat_id => $chat_id,
+		$self->{api}->send_contact({chat_id => $chat_id, contact => {
 			phone_number => $self->{phone_number},
 			first_name => $self->{first_name},
-			last_name => $self->{last_name},
-		});
+			last_name => $self->{last_name}
+		}});
 	} catch {
-		$self->{api}->sendMessage({chat_id => $chat_id, text =>
+		$self->{api}->send_message({chat_id => $chat_id, text =>
 			lz("contact_format", $self->{first_name}, $self->{last_name} // "",
 			$self->{phone_number})});
 	}

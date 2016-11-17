@@ -4,12 +4,6 @@ package BookingBot;
 
 use common::sense;
 use Mojolicious::Lite;
-use WWW::Telegram::BotAPI;
-
-use lib "serikoff.lib";
-use Serikoff::Telegram::Keyboards qw(create_one_time_keyboard);
-use Serikoff::Telegram::Polling qw(get_last_messages);
-use Serikoff::Telegram::Restgram;
 
 use DateTimeFactory;
 use Contacts;
@@ -20,25 +14,21 @@ use Instructors;
 use Localization qw(lz dt);
 use Log;
 use Resources;
+use Telegram;
 
 $| = 1; # disable buffering
 
 my $jsonconfig = plugin "JSONConfig";
 
-BEGIN { $ENV{TELEGRAM_BOTAPI_DEBUG} = 1 };
-my $api = WWW::Telegram::BotAPI->new(
-	token => "222684756:AAHSkWGC101ooGT3UYSYxofC8x3BD1PT5po"
-);
-
 Localization::set_language($jsonconfig->{language});
 
+my $api = Telegram::BotAPI->new($jsonconfig->{token});
 my $contacts = Contacts->new($api);
 my $dtf = DateTimeFactory->new($jsonconfig->{timezone});
-my $groups = Groups->new($api->getMe->{result}->{id});
+my $groups = Groups->new($api->my_id);
 my $instructors = Instructors->new(
 	$api, $contacts, $groups, $jsonconfig->{instructors});
 my $resources = Resources->new($jsonconfig->{resources});
-my $restgram = Serikoff::Telegram::Restgram->new();
 my $log = Log->new();
 my %machines = ();
 
@@ -47,11 +37,11 @@ sub new_fsm {
 
 	FSM->new(
 		send_start_message => sub {
-			$api->sendMessage({chat_id => $chat_id, text => lz("start")});
+			$api->send_message({chat_id => $chat_id, text => lz("start")});
 		},
 
 		send_contact_message => sub {
-			$api->sendMessage({chat_id => $chat_id, text => lz("contact")});
+			$api->send_message({chat_id => $chat_id, text => lz("contact")});
 		},
 
 		save_contact => sub {
@@ -63,12 +53,12 @@ sub new_fsm {
 		},
 
 		send_contact_failed => sub {
-			$api->sendMessage({
+			$api->send_message({
 					chat_id => $chat_id, text => lz("invalid_contact")});
 		},
 
 		send_begin_message => sub {
-			$api->sendMessage({chat_id => $chat_id, text => lz("begin")});
+			$api->send_message({chat_id => $chat_id, text => lz("begin")});
 		},
 
 		send_resources => sub {
@@ -81,10 +71,10 @@ sub new_fsm {
 			} @{$resources->names};
 
 			if (scalar @keyboard > 0) {
-				$api->sendMessage({
+				$api->send_keyboard({
 					chat_id => $chat_id,
 					text => lz("select_resource"),
-					reply_markup => create_one_time_keyboard(\@keyboard, 1)
+					keyboard => \@keyboard
 				});
 			} else {
 				undef;
@@ -97,12 +87,12 @@ sub new_fsm {
 		},
 
 		send_resource_not_found => sub {
-			$api->sendMessage({
+			$api->send_message({
 				chat_id => $chat_id, text => lz("resource_not_found")});
 		},
 
 		send_resource_failed => sub {
-			$api->sendMessage({
+			$api->send_message({
 				chat_id => $chat_id, text => lz("invalid_resource")});
 		},
 
@@ -122,10 +112,10 @@ sub new_fsm {
 				} keys %$durations;
 
 			if (scalar @keyboard > 0) {
-				$api->sendMessage({
+				$api->send_keyboard({
 					chat_id => $chat_id,
 					text => lz("select_duration"),
-					reply_markup => create_one_time_keyboard(\@keyboard, 1)
+					keyboard => \@keyboard
 				});
 			} else {
 				undef;
@@ -142,12 +132,12 @@ sub new_fsm {
 		},
 
 		send_duration_not_found => sub {
-			$api->sendMessage({
+			$api->send_message({
 				chat_id => $chat_id, text => lz("duration_not_found")});
 		},
 
 		send_duration_failed => sub {
-			$api->sendMessage({
+			$api->send_message({
 				chat_id => $chat_id, text => lz("invalid_duration")});
 		},
 
@@ -157,10 +147,10 @@ sub new_fsm {
 			my $vacancies = $resources->vacancies($resource, $duration);
 			my @keyboard = map { dt($_->{span}->start) } @$vacancies;
 
-			$api->sendMessage({
+			$api->send_keyboard({
 				chat_id => $chat_id,
 				text => lz("select_datetime"),
-				reply_markup => create_one_time_keyboard(\@keyboard, 1)
+				keyboard => \@keyboard
 			});
 		},
 
@@ -170,7 +160,7 @@ sub new_fsm {
 		},
 
 		send_datetime_failed => sub {
-			$api->sendMessage({
+			$api->send_message({
 				chat_id => $chat_id, text => lz("invalid_datetime")});
 		},
 
@@ -187,7 +177,7 @@ sub new_fsm {
 		},
 
 		send_instructor_failed => sub {
-			$api->sendMessage({
+			$api->send_message({
 				chat_id => $chat_id, text => lz("instructor_not_found")});
 		},
 
@@ -198,7 +188,7 @@ sub new_fsm {
 			$resources->book(lz("booked_by", $contacts->fullname($user->{id})),
 				$resource, $span);
 
-			$api->sendMessage({
+			$api->send_message({
 				chat_id => $chat_id,
 				text => lz("booked", $resource, dt($datetime))});
 
@@ -211,10 +201,10 @@ sub new_fsm {
 		},
 
 		send_refresh => sub {
-			$api->sendMessage({
+			$api->send_message({
 				chat_id => $chat_id,
 				text => lz("press_refresh_button"),
-				reply_markup => create_one_time_keyboard([lz("refresh")], 1)
+				keyboard => [lz("refresh")]
 			});
 		},
 	);
@@ -230,7 +220,7 @@ $log->infof("ready to process incoming messages");
 
 my $polling_interval = 1;
 Mojo::IOLoop->recurring($polling_interval => sub {
-	my $hash = get_last_messages($api);
+	my $hash = $api->last_messages();
 	while (my ($chat_id, $update) = each(%$hash)) {
 		Log::incsid;
 
@@ -250,25 +240,13 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 			my $user = $update->{message}->{from};
 			$log->infof("new message: %s", $update->{message});
 
-			if (defined $update->{message}{text}
-					and substr($update->{message}{text}, 0, 1) eq "%") {
-				# temporary mode for restgram testing
-				$log->infof("restgram testing mode");
-
-				my $phone = substr($update->{message}{text}, 1);
-				my $answer = $restgram->get_full_user_by_phone($phone);
-				$log->infof("answer: %s", $answer);
-
-				$api->sendMessage({chat_id => $chat_id, text => $answer});
-
-			} else {
-				if (not exists $machines{$chat_id}) {
-					$machines{$chat_id} = new_fsm($user, $chat_id);
-					$log->infof("finite state machine created");
-				}
-				$machines{$chat_id}->next($update);
-				$log->infof("moved to next state");
+			if (not exists $machines{$chat_id}) {
+				$machines{$chat_id} = new_fsm($user, $chat_id);
+				$log->infof("finite state machine created");
 			}
+
+			$machines{$chat_id}->next($update);
+			$log->infof("moved to next state");
 		}
 
 		$log->infof("message processing finished");

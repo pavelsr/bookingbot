@@ -19,6 +19,11 @@ sub new {
 	bless $self, $class;
 }
 
+sub debugf {
+	my ($self, $message, @params) = @_;
+	$self->{log}->debugf("[$sid] " . $message, @params);
+}
+
 sub infof {
 	my ($self, $message, @params) = @_;
 	$self->{log}->infof("[$sid] " . $message, @params);
