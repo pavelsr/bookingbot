@@ -201,7 +201,7 @@ sub new_fsm {
 		},
 
 		send_refresh => sub {
-			$api->send_message({
+			$api->send_keyboard({
 				chat_id => $chat_id,
 				text => lz("press_refresh_button"),
 				keyboard => [lz("refresh")]
