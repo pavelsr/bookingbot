@@ -11,4 +11,4 @@ RUN cpanm --installdeps . \
 
 COPY . .
 
-ENTRYPOINT ["morbo", "-w", "bot.json", "bot.pl"]
+ENTRYPOINT ["perl", "bot.pl"]

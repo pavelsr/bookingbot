@@ -217,9 +217,7 @@ Google::CalendarAPI::auth(
 
 $log->infof("ready to process incoming messages");
 
-
-my $polling_interval = 1;
-Mojo::IOLoop->recurring($polling_interval => sub {
+while (1) {
 	my $hash = $api->last_messages();
 	while (my ($chat_id, $update) = each(%$hash)) {
 		Log::incsid;
@@ -251,6 +249,6 @@ Mojo::IOLoop->recurring($polling_interval => sub {
 
 		$log->infof("message processing finished");
 	}
-});
 
-app->start;
+	sleep 1;
+}
