@@ -2,6 +2,8 @@
 
 package BookingBot;
 
+use Cwd qw(getcwd);;
+
 use common::sense;
 use Mojolicious::Lite;
 
@@ -212,8 +214,7 @@ sub new_fsm {
 }
 
 
-Google::CalendarAPI::auth(
-	"gapi.conf", "fablab61ru\@gmail.com");
+Google::CalendarAPI::auth(getcwd . "/gapi.conf", "fablab61ru\@gmail.com");
 
 
 $log->infof("ready to process incoming messages");
