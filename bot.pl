@@ -5,8 +5,8 @@ package BookingBot;
 use common::sense;
 use Mojolicious::Lite;
 
-use DateTimeFactory;
 use Contacts;
+use DateTimeFactory;
 use FSM;
 use Google;
 use Groups;
@@ -20,11 +20,12 @@ $| = 1; # disable buffering
 
 my $jsonconfig = plugin "JSONConfig";
 
+DateTimeFactory::set_default_timezone($jsonconfig->{timezone});
 Localization::set_language($jsonconfig->{language});
 
 my $api = Telegram::BotAPI->new($jsonconfig->{token});
 my $contacts = Contacts->new($api);
-my $dtf = DateTimeFactory->new($jsonconfig->{timezone});
+my $dtf = DateTimeFactory->new;
 my $groups = Groups->new($api->my_id);
 my $instructors = Instructors->new(
 	$api, $contacts, $groups, $jsonconfig->{instructors});
@@ -212,7 +213,7 @@ sub new_fsm {
 
 
 Google::CalendarAPI::auth(
-	"gapi.conf", "fablab61ru\@gmail.com", $jsonconfig->{timezone});
+	"gapi.conf", "fablab61ru\@gmail.com");
 
 
 $log->infof("ready to process incoming messages");

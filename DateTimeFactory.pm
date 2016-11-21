@@ -12,9 +12,14 @@ use DateTime::SpanSet;
 
 use Scalar::Util qw(blessed);
 
+my $default_timezone;
+sub set_default_timezone {
+	$default_timezone = shift;
+}
+
 sub new {
 	my ($class, $timezone) = @_;
-	my $self = {timezone => $timezone};
+	my $self = {timezone => $timezone // $default_timezone};
 	bless $self, $class;
 }
 

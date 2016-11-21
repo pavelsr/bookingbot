@@ -15,10 +15,10 @@ my $user;
 my $dtf;
 
 sub auth {
-	my ($tokensfile, $user_, $timezone) = @_;
+	my ($tokensfile, $user_) = @_;
 	$api = API::Google::GCal->new({tokensfile => $tokensfile});
 	$user = $user_;
-	$dtf = DateTimeFactory->new($timezone);
+	$dtf = DateTimeFactory->new;
 }
 
 my $_expire;
