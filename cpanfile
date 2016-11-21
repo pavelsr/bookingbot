@@ -7,6 +7,7 @@ requires "DateTime::Duration";
 requires "DateTime::Format::RFC3339";
 requires "DateTime::Span";
 requires "DateTime::SpanSet";
+requires "File::Basename";
 requires "FSA::Rules";
 requires "List::MoreUtils";
 requires "Log::Any";
