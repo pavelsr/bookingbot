@@ -6,6 +6,7 @@ package Telegram::BotAPI;
 use strict;
 use warnings;
 
+use Try::Tiny qw(try catch);
 use WWW::Telegram::BotAPI;
 
 use lib "serikoff.lib";
@@ -34,7 +35,10 @@ sub my_id {
 
 sub last_messages {
 	my ($self) = @_;
-	get_last_messages($self->{api});
+	my $result = {};
+	try {
+		$result = get_last_messages($self->{api});
+	}
 }
 
 sub send_message {
