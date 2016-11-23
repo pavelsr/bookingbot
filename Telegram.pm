@@ -21,7 +21,7 @@ sub new {
 	my ($class, $token) = @_;
 	my $self = {
 		api => WWW::Telegram::BotAPI->new(token => $token),
-		log => Log->new("telegram_api")
+		log => Log->new("telegram_botapi")
 	};
 	bless $self, $class;
 }
