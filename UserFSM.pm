@@ -1,4 +1,4 @@
-package FSM;
+package UserFSM;
 
 use strict;
 use warnings;

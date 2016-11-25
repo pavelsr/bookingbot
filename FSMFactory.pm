@@ -5,7 +5,7 @@ use warnings;
 
 use Contacts;
 use DateTimeFactory;
-use FSM;
+use UserFSM;
 use Instructors;
 use Localization qw(lz dt);
 use Resources;
@@ -40,7 +40,7 @@ sub create {
 sub user_fsm {
 	my ($self, $user, $chat_id) = @_;
 
-	FSM->new(
+	UserFSM->new(
 		send_start_message => sub {
 			$self->{api}->send_message(
 				{chat_id => $chat_id, text => lz("start")});
