@@ -13,6 +13,11 @@ sub new {
 	bless \%self, $class;
 }
 
+sub id {
+	my ($self) = @_;
+	$self->{id};
+}
+
 sub fullname {
 	my ($self) = @_;
 	my $first_name = $self->{first_name};

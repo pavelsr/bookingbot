@@ -25,6 +25,12 @@ sub exists {
 	defined $self->{instructors}->{$name};
 }
 
+sub is_instructor {
+	my ($self, $id) = @_;
+	my @result = grep { $_->id eq $id } values %{$self->{instructors}};
+	scalar @result > 0;
+}
+
 sub share_contact {
 	my ($self, $name, $chat_id) = @_;
 	die unless $self->exists($name);

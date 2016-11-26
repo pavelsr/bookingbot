@@ -6,6 +6,7 @@ use warnings;
 use Contacts;
 use DateTimeFactory;
 use UserFSM;
+use InstructorFSM;
 use Instructors;
 use Localization qw(lz dt);
 use Resources;
@@ -34,7 +35,89 @@ sub new {
 
 sub create {
 	my ($self, $user, $chat_id) = @_;
-	$self->user_fsm($user, $chat_id);
+
+	if ($self->{instructors}->is_instructor($user->{id})) {
+		$self->instructor_fsm($user, $chat_id);
+	} else {
+		$self->user_fsm($user, $chat_id);
+	}
+}
+
+sub instructor_fsm {
+	my ($self, $user, $chat_id) = @_;
+
+	InstructorFSM->new(
+		send_start_message => sub {
+			$self->{api}->send_message(
+				{chat_id => $chat_id, text => lz("instructor_start")});
+		},
+
+		send_cancel_message => sub {
+			$self->{api}->send_message({chat_id => $chat_id,
+					text => lz("instructor_operation_cancelled")});
+		},
+
+		send_menu => sub {
+			my @keyboard = (
+				lz("instructor_show_schedule"),
+				lz("instructor_add_record"),
+			);
+			$self->{api}->send_keyboard({
+				chat_id => $chat_id,
+				text => lz("instructor_menu"),
+				keyboard => \@keyboard
+			});
+		},
+
+		is_schedule_selected => sub {
+			my ($text) = @_;
+			$text eq lz("instructor_show_schedule");
+		},
+
+		is_add_record_selected => sub {
+			my ($text) = @_;
+			$text eq lz("instructor_add_record");
+		},
+
+		send_schedule => sub {
+			$self->{api}->send_message(
+				{chat_id => $chat_id, text => lz("instructor_schedule")});
+		},
+
+		send_resources => sub {
+			my @keyboard = @{$self->{resources}->names};
+			if (scalar @keyboard > 0) {
+				push @keyboard, lz("instructor_cancel_operation");
+				$self->{api}->send_keyboard({
+					chat_id => $chat_id,
+					text => lz("instructor_select_resource"),
+					keyboard => \@keyboard
+				});
+			} else {
+				undef;
+			}
+		},
+
+		is_cancel_operation_selected => sub {
+			my ($text) = @_;
+			$text eq lz("instructor_cancel_operation");
+		},
+
+		parse_resource => sub {
+			my ($name) = @_;
+			$self->{resources}->exists($name) ? $name : undef;
+		},
+
+		send_resource_not_found => sub {
+			$self->{api}->send_message({
+				chat_id => $chat_id, text => lz("resource_not_found")});
+		},
+
+		send_resource_failed => sub {
+			$self->{api}->send_message({chat_id => $chat_id,
+				text => lz("instructor_invalid_resource")});
+		},
+	);
 }
 
 sub user_fsm {
@@ -222,10 +305,6 @@ sub user_fsm {
 			});
 		},
 	);
-}
-
-sub instructor_fsm {
-	my ($self) = @_;
 }
 
 1;

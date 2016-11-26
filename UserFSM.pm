@@ -5,6 +5,10 @@ use warnings;
 
 use FSA::Rules;
 
+use FSMUtils;
+
+use parent ("BaseFSM");
+
 sub new {
 	my ($class, %callbacks) = @_;
 
@@ -31,8 +35,8 @@ sub new {
 						}
 					},
 
-					START => \&_start,
-					START => \&_cancel,
+					START => \&FSMUtils::_start,
+					START => \&FSMUtils::_cancel,
 
 					CONTACT_FAILED => 1
 				],
@@ -74,15 +78,15 @@ sub new {
 
 					DURATION => sub {
 						my ($state, $update) = @_;
-						_with_text($update, sub {
+						FSMUtils::_with_text($update, sub {
 							my ($text) = @_;
-							_parse_value($state,
+							FSMUtils::_parse_value($state,
 								$callbacks{parse_resource}, $text);
 						});
 					},
 
-					BEGIN => \&_start,
-					CANCEL => \&_cancel,
+					BEGIN => \&FSMUtils::_start,
+					CANCEL => \&FSMUtils::_cancel,
 
 					RESOURCE_FAILED => 1
 				],
@@ -128,15 +132,15 @@ sub new {
 
 					DATETIME => sub {
 						my ($state, $update) = @_;
-						_with_text($update, sub {
+						FSMUtils::_with_text($update, sub {
 							my ($text) = @_;
-							_parse_value($state,
+							FSMUtils::_parse_value($state,
 								$callbacks{parse_duration}, $text);
 						});
 					},
 
-					BEGIN => \&_start,
-					CANCEL => \&_cancel,
+					BEGIN => \&FSMUtils::_start,
+					CANCEL => \&FSMUtils::_cancel,
 
 					DURATION_FAILED => 1
 				],
@@ -173,15 +177,15 @@ sub new {
 				rules => [
 					INSTRUCTOR => sub {
 						my ($state, $update) = @_;
-						_with_text($update, sub {
+						FSMUtils::_with_text($update, sub {
 							my ($text) = @_;
-							_parse_value($state,
+							FSMUtils::_parse_value($state,
 								$callbacks{parse_datetime}, $text);
 						});
 					},
 
-					BEGIN => \&_start,
-					CANCEL => \&_cancel,
+					BEGIN => \&FSMUtils::_start,
+					CANCEL => \&FSMUtils::_cancel,
 
 					DATETIME_FAILED => 1
 				],
@@ -207,7 +211,7 @@ sub new {
 						my $datetime = $machine->last_result("DATETIME");
 						my $duration = $machine->last_result("DURATION");
 
-						_parse_value($state, $callbacks{parse_instructor},
+						FSMUtils::_parse_value($state, $callbacks{parse_instructor},
 							$resource, $datetime, $duration);
 					},
 					INSTRUCTOR_FAILED => 1
@@ -258,45 +262,6 @@ sub new {
 	bless $self, $class;
 	$self->{fsa}->start();
 	$self;
-}
-
-sub next {
-	my ($self, $update) = @_;
-	my $last_message;
-	do {
-		$self->{fsa}->switch($update);
-		$last_message = $self->{fsa}->last_message;
-	} while (defined $last_message and $last_message eq "transition")
-}
-
-sub _with_text {
-	my ($update, $callback) = @_;
-	defined $update
-		and defined $update->{message}
-		and defined $update->{message}->{text}
-		? $callback->($update->{message}->{text})
-		: undef
-}
-
-sub _start {
-	my ($state, $update) = @_;
-	_with_text($update, sub { shift eq "/start"; });
-}
-
-sub _cancel {
-	my ($state, $update) = @_;
-	_with_text($update, sub { shift eq "/cancel"; });
-}
-
-sub _parse_value {
-	my ($state, $parser, @data) = @_;
-
-	my $parsed = $parser->(@data);
-	if (defined $parsed) {
-		$state->result($parsed);
-	}
-
-	defined $parsed;
 }
 
 1;
