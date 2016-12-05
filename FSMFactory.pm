@@ -3,6 +3,8 @@ package FSMFactory;
 use strict;
 use warnings;
 
+use Date::Manip::Date;
+
 use Contacts;
 use DateTimeFactory;
 use UserFSM;
@@ -84,18 +86,15 @@ sub instructor_fsm {
 				{chat_id => $chat_id, text => lz("instructor_schedule")});
 		},
 
-		send_resources => sub {
-			my @keyboard = @{$self->{resources}->names};
-			if (scalar @keyboard > 0) {
-				push @keyboard, lz("instructor_cancel_operation");
-				$self->{api}->send_keyboard({
-					chat_id => $chat_id,
-					text => lz("instructor_select_resource"),
-					keyboard => \@keyboard
-				});
-			} else {
-				undef;
-			}
+		ask_record_time => sub {
+			my @keyboard = (
+				lz("instructor_cancel_operation"),
+			);
+			$self->{api}->send_keyboard({
+				chat_id => $chat_id,
+				text => lz("instructor_record_time"),
+				keyboard => \@keyboard
+			});
 		},
 
 		is_cancel_operation_selected => sub {
@@ -103,19 +102,30 @@ sub instructor_fsm {
 			$text eq lz("instructor_cancel_operation");
 		},
 
-		parse_resource => sub {
-			my ($name) = @_;
-			$self->{resources}->exists($name) ? $name : undef;
-		},
-
-		send_resource_not_found => sub {
+		ask_record_time_failed => sub {
 			$self->{api}->send_message({
-				chat_id => $chat_id, text => lz("resource_not_found")});
+				chat_id => $chat_id, text => lz("invalid_record_time")});
 		},
 
-		send_resource_failed => sub {
-			$self->{api}->send_message({chat_id => $chat_id,
-				text => lz("instructor_invalid_resource")});
+		parse_record_time => sub {
+			my ($text) = @_;
+			my $date = new Date::Manip::Date [
+				"Language", "Russian",
+				"DateFormat", lz("date_manip_format"),
+				"YYtoYYYY", 0,
+				"Format_MMMYYYY", "first",
+			];
+			my $result;
+			my $err = $date->parse($text);
+			if (not $err) {
+				my $datetime = $self->{dtf}->epoch($date->printf("%s"));
+				$self->{api}->send_message({
+					chat_id => $chat_id, text => dt($datetime)});
+				if ($datetime >= $self->{dtf}->tomorrow()) {
+					$result = $datetime;
+				}
+			}
+			$result;
 		},
 	);
 }

@@ -11,6 +11,7 @@ my %strings = (
 		"na"                                  => "N/A",
 
 		"datetime_format"                     => "%%d %%b %%H:%%M",
+		"date_manip_format"                   => "US",
 		"contact_format"                      => "▶ %s %s\n📞 %s",
 
 		"30_min"                              => "30 minutes",
@@ -45,9 +46,7 @@ my %strings = (
 		"instructor_show_schedule"            => "📒 Show my schedule",
 		"instructor_add_record"               => "➕ Add record to the schedule",
 		"instructor_schedule"                 => "OK, I am going to send you the schedule in a moment",
-		"instructor_select_resource"          => "Select resource",
-		"instructor_resource_not_found"       => "I can't found available tools, sorry. Try again later",
-		"instructor_invalid_resource"         => "This is not information I need. Try again",
+		"instructor_record_time"              => "Enter time when you are available",
 		"instructor_new_book"                 => "Hi! I have received new book record for you, here is what I have:\nResource: %s\nBooked from %s to %s\nI will send you the user contact in a moment\nYour contact has been sent to the user already\nHave a nice day! 😊",
 
 		"group_new_book"                      => "Hi guys! I have received new book record for instructor %s (%s), here is what I have:\nResource: %s\nBooked from %s to %s\nI will post here the user contact in a moment\nThe instructor's contact has been sent to the user already\nHave a nice day! 😊",
@@ -56,6 +55,8 @@ my %strings = (
 
 	"Russian" => {
 		"na"                                  => "Н/Д",
+
+		"date_manip_format"                   => "RU",
 
 		"30_min"                              => "30 минут",
 		"1_hour"                              => "1 час",

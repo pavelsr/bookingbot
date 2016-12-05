@@ -52,7 +52,7 @@ sub new {
 						});
 					},
 
-					RESOURCE => sub {
+					RECORD => sub {
 						my ($state, $update) = @_;
 						FSMUtils::_with_text($update, sub {
 							my ($text) = @_;
@@ -75,22 +75,12 @@ sub new {
 				rules => [MENU => 1],
 			},
 
-			RESOURCE => {
+			RECORD => {
 				do => sub {
 					my ($state) = @_;
-					if (not defined $callbacks{send_resources}()) {
-						$state->message("transition");
-						$state->result(undef);
-					} else {
-						$state->result(1);
-					}
+					$callbacks{ask_record_time}();
 				},
 				rules => [
-					RESOURCE_NOT_FOUND => sub {
-						my ($state) = @_;
-						not defined $state->result;
-					},
-
 					CANCEL => sub {
 						my ($state, $update) = @_;
 						FSMUtils::_with_text($update, sub {
@@ -104,30 +94,21 @@ sub new {
 						FSMUtils::_with_text($update, sub {
 							my ($text) = @_;
 							FSMUtils::_parse_value($state,
-								$callbacks{parse_resource}, $text);
+								$callbacks{parse_record_time}, $text);
 						});
 					},
 
-					RESOURCE_FAILED => 1
+					RECORD_FAILED => 1
 				],
 			},
 
-			RESOURCE_NOT_FOUND => {
+			RECORD_FAILED => {
 				do => sub {
 					my ($state) = @_;
 					$state->message("transition");
-					$callbacks{send_resource_not_found}();
+					$callbacks{ask_record_time_failed}();
 				},
-				rules => [MENU => 1],
-			},
-
-			RESOURCE_FAILED => {
-				do => sub {
-					my ($state) = @_;
-					$state->message("transition");
-					$callbacks{send_resource_failed}();
-				},
-				rules => [RESOURCE => 1],
+				rules => [RECORD => 1],
 			},
 
 			DURATION => {
