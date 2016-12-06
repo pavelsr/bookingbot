@@ -11,8 +11,31 @@ my %strings = (
 		"na"                                  => "N/A",
 
 		"datetime_format"                     => "%%d %%b %%H:%%M",
-		"date_manip_format"                   => "US",
 		"contact_format"                      => "▶ %s %s\n📞 %s",
+
+		"span_regexp"                         => qr/(?:[^\d\s]+\s+)?([^\d\s,]+)(?:(?:\s*,\s*)|(?:\s+))([^\d\s]+)\s+(\d+)(?:[:.-](\d+))?(?:\s+[^\d\s]+\s+(\d+)(?:[:.-](\d+))?)?/i,
+		"today"                               => "today",
+		"tomorrow"                            => "tomorrow",
+
+		"monday_full"                         => "monday",
+		"tuesday_full"                        => "tuesday",
+		"wednesday_full"                      => "wednesday",
+		"thursday_full"                       => "thursday",
+		"friday_full"                         => "friday",
+		"saturday_full"                       => "saturday",
+		"sunday_full"                         => "sunday",
+
+		"monday_short"                        => "mon",
+		"tuesday_short"                       => "tue",
+		"wednesday_short"                     => "wed",
+		"thursday_short"                      => "thu",
+		"friday_short"                        => "fri",
+		"saturday_short"                      => "sat",
+		"sunday_short"                        => "sun",
+
+		"weekday_preposition"                 => "on",
+		"from_preposition"                    => "from",
+		"to_preposition"                      => "to",
 
 		"30_min"                              => "30 minutes",
 		"1_hour"                              => "1 hour",
@@ -56,7 +79,28 @@ my %strings = (
 	"Russian" => {
 		"na"                                  => "Н/Д",
 
-		"date_manip_format"                   => "RU",
+		"today"                               => "сегодня",
+		"tomorrow"                            => "завтра",
+
+		"monday_full"                         => "понедельник",
+		"tuesday_full"                        => "вторник",
+		"wednesday_full"                      => "среда",
+		"thursday_full"                       => "четверг",
+		"friday_full"                         => "пятница",
+		"saturday_full"                       => "суббота",
+		"sunday_full"                         => "воскресенье",
+
+		"monday_short"                        => "пн",
+		"tuesday_short"                       => "вт",
+		"wednesday_short"                     => "ср",
+		"thursday_short"                      => "чт",
+		"friday_short"                        => "пт",
+		"saturday_short"                      => "сб",
+		"sunday_short"                        => "вс",
+
+		"weekday_preposition"                 => "в",
+		"from_preposition"                    => "с",
+		"to_preposition"                      => "до",
 
 		"30_min"                              => "30 минут",
 		"1_hour"                              => "1 час",

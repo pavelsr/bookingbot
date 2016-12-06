@@ -3,8 +3,6 @@ package FSMFactory;
 use strict;
 use warnings;
 
-use Date::Manip::Date;
-
 use Contacts;
 use DateTimeFactory;
 use UserFSM;
@@ -109,22 +107,7 @@ sub instructor_fsm {
 
 		parse_record_time => sub {
 			my ($text) = @_;
-			my $date = new Date::Manip::Date [
-				"Language", "Russian",
-				"DateFormat", lz("date_manip_format"),
-				"YYtoYYYY", 0,
-				"Format_MMMYYYY", "first",
-			];
 			my $result;
-			my $err = $date->parse($text);
-			if (not $err) {
-				my $datetime = $self->{dtf}->epoch($date->printf("%s"));
-				$self->{api}->send_message({
-					chat_id => $chat_id, text => dt($datetime)});
-				if ($datetime >= $self->{dtf}->tomorrow()) {
-					$result = $datetime;
-				}
-			}
 			$result;
 		},
 	);
