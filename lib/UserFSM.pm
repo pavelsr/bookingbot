@@ -2,11 +2,8 @@ package UserFSM;
 
 use strict;
 use warnings;
-
 use FSA::Rules;
-
 use FSMUtils;
-
 use parent ("BaseFSM");
 
 sub new {
@@ -17,8 +14,8 @@ sub new {
 			START => {
 				# init machine here
 				do => sub {
-					my ($state) = @_;
-					$state->message("transition");
+					my ($state) = @_;    # $state = FSA::State object
+					$state->message("transition");  #
 					$callbacks{send_start_message}();
 				},
 				rules => [CONTACT => 1],

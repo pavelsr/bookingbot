@@ -11,9 +11,27 @@ use Instructors;
 use Localization qw(lz dt);
 use Resources;
 
+=head1 SYNOPSYS
+
+my $fsmfactory = FSMFactory->new($api, $groups, $jsonconfig);
+
+
+=cut
+
+
+
+=method new
+
+my $fsmfactory = FSMFactory->new($api, $groups, $jsonconfig);
+
+Creates a superobject containing some objects (bless object into a superobject)
+
+Contacts, DateTimeFactory, Instructors, Resources
+
+=cut
+
 sub new {
 	my ($class, $api, $groups, $config) = @_;
-
 	my $contacts = Contacts->new($api);
 	my $dtf = DateTimeFactory->new;
 	my $instructors = Instructors->new(
@@ -32,6 +50,12 @@ sub new {
 	};
 	bless $self, $class;
 }
+
+=method
+
+Builds a finite state automat depending on user role (instructor or end user)
+
+=cut
 
 sub create {
 	my ($self, $user, $chat_id) = @_;

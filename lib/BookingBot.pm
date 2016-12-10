@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
-
 package BookingBot;
+
+# ABSTRACT: Telegram booking bot
 
 use common::sense;
 use File::Basename qw(dirname);
-use Mojolicious::Lite;
 
 use FSMFactory;
 use Google;

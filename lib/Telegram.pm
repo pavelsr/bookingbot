@@ -10,8 +10,8 @@ use Try::Tiny qw(try catch);
 use WWW::Telegram::BotAPI;
 
 use lib "serikoff.lib";
-use Serikoff::Telegram::Keyboards qw(create_one_time_keyboard);
-use Serikoff::Telegram::Polling qw(get_last_messages);
+use Telegram::BotKit::Keyboards qw(create_one_time_keyboard);
+use Telegram::BotKit::Polling qw(get_last_messages);
 
 use Log;
 

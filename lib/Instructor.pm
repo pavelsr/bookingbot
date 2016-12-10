@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Try::Tiny qw(try catch);
-
 use Localization qw(lz);
 
 sub new {
@@ -17,6 +16,13 @@ sub id {
 	my ($self) = @_;
 	$self->{id};
 }
+
+
+=method fullname
+
+Return string
+
+=cut
 
 sub fullname {
 	my ($self) = @_;
