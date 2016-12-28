@@ -1,0 +1,36 @@
+#!perl
+package bookingbot;
+ 
+# ABSTRACT: CLI bot runner. By default needs config.json in directory from which bot is running. But you can specify config filename: $ bookingbot <filename.json>
+
+use Config::JSON;
+use BookingBot;
+use Cwd 'abs_path';
+
+my $filename = $ARGV[0] || 'config.json' ;
+my $required = [ 'token' ];   # required parameters
+my $defaults = { language => 'Russian', timezone => 'Europe/Moscow' };
+
+my $abs_path = abs_path($filename);
+warn "config filename: ".$abs_path;
+
+my $bot = BookingBot->new({ config_file => $abs_path });
+$bot->run();
+
+# at least one resourse for booking
+
+# Check for default parameters
+# dirname(__FILE__) . "/gapi.conf"
+
+
+# if (-e $filename) {
+#   say "File $filename exists";
+#   # check what parameters exist and correct
+#   # then prompt for needed
+#   input_if_not_exists(['gapi/client_id', 'gapi/client_secret']);
+#   runserver();
+# } else {
+#   say "JSON file $filename with API tokens not found. Creating new file...";
+#   setup();
+#   runserver();
+# }

@@ -6,6 +6,12 @@ BookingBot - Telegram booking bot
 
 version 0.01
 
+# METHODS
+
+## new
+
+my $bot = BookingBot->new({ config\_file => '/home/test/config.json' });
+
 # AUTHOR
 
 Pavel Serikov <pavelsr@cpan.org>
